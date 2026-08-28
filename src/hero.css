@@ -1,0 +1,5 @@
+.notebook-art{margin:0;height:auto;display:block;transform:rotate(2deg)}
+.notebook-art img{width:100%;max-width:340px;aspect-ratio:1;object-fit:cover;display:block;border:1px solid var(--line);box-shadow:8px 9px 0 color-mix(in srgb,var(--ink) 13%,transparent)}
+.notebook-art figcaption{font:12px ui-monospace,monospace;color:var(--muted);margin-top:8px;text-align:right}
+.notebook-art .sheet,.notebook-art .clip{display:none}
+@media(max-width:680px){.notebook-art{height:auto;max-width:260px;margin:20px auto 0}}
