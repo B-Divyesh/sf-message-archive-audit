@@ -1,34 +1,39 @@
-# Archive Audit handoff
+# Archive Audit verification handoff
 
-## Delivered
+## Status: FAIL — do not release
 
-- Offline-first Vite/TypeScript PWA for standard MIME EML and text MBOX exports.
-- Local message inventory, embedded attachment decoding and SHA-256 hashing.
-- Optional attachment-folder inventory; named attachment references are called out when absent and shown as separately found when a matching filename exists.
-- Portable HTML receipt, CSV and JSON downloads. A compact report survives refresh in IndexedDB and can be cleared; selected source bytes are never persisted by the app.
-- Responsive notebook-style interface, dark treatment, keyboard-visible focus, skip link, semantic landmarks, PWA manifest/icons/service worker, update toast, `/privacy/`, `/terms/`, and optional Sociobot one-time license restore/verification flow.
-- Generated original visual at `assets/src/hero-notebook.png`, with retained prompt metadata, and an optimised 48 KB `public/hero-notebook.webp` used in the app. Its source/provenance is recorded in `design.md`.
+Independent QA was completed against candidate `9aa6482d605ec566bd2f95d6432fb7bdd31c1e50` and <https://message-archive-audit.sociobot.in> on 2026-08-28 UTC. The deployed app shell is byte-for-byte identical to the candidate build, so the result is not a deployment-only failure.
 
-## Verify
+Full evidence and reproduction details are in [verification.md](verification.md).
+
+## Blocking defects
+
+- `.factory/claims.json` is missing; no mandatory claim tests exist.
+- Cold first-read and isolated one-click demo requirements fail; the sample persists in the real IndexedDB namespace.
+- `public/sw.js` has a syntax error. Registration logs a page error and offline reload fails with `ERR_INTERNET_DISCONNECTED`.
+- Empty/nonsense `.eml` files receive a `VERIFIED` result, while standard 7-bit MIME attachments are falsely marked missing.
+- HTML/CSV receipts omit messages that have no attachments.
+- Axe finds a serious keyboard issue in the results ledger.
+- The advertised checkout endpoint returns 404; exact price and working paid features are absent.
+
+Additional findings cover CSV formula injection, missing folder-file hashes from portable receipts, 390 px overflow, undersized touch targets, incomplete security/metadata headers, short-lived asset caching, and missing required routes/docs.
+
+## Checks run
 
 ```sh
-npm install
+npm ci
 npm test
 npm run build
 npm run test:e2e
+node --check public/sw.js
+/opt/fleet/lib/verify-url.sh https://message-archive-audit.sociobot.in <evidence-dir>
+npx @axe-core/cli https://message-archive-audit.sociobot.in
 ```
 
-`npm run build` produces `dist/index.html` at the deploy root.
+The axe CLI could not locate a system Chrome, so axe-core 4.10.3 was injected into the pinned Playwright 1.58.2 Chromium for the recorded route/state runs.
 
-Verification completed 2026-08-28:
+Passing evidence: clean install, 2 unit tests, TypeScript/build, and 1 existing E2E test; exact live/local artifact hashes; same-origin-only sample traffic; manifest parsing; keyboard focus/skip link; reduced motion; rate limiting (50-request burst: 29×200, 21×429, `Retry-After: 4`); Lighthouse Performance 99 and initial asset budgets.
 
-- `npm test`: 2 parser tests passing.
-- `npm run build`: passing; initial application JS is 6.30 KB gzip and CSS 2.81 KB gzip.
-- `npm run test:e2e`: passing at 390×844; loads and audits a sample message, uses `context.setOffline(true)`, asserts no console errors, title and main heading.
-- Lighthouse local run: Performance 98, Accessibility 100; LCP 1.7 s, TBT 170 ms, CLS 0.
+## Next verification
 
-## Known limits / next steps
-
-- The inspector deliberately supports only standard MIME EML and text MBOX. It cannot decrypt mail, access providers, recover missing messages, or parse proprietary message databases.
-- A separate folder reference is matched by filename because an external MIME reference has no source bytes to hash. Embedded attachments are hashed precisely.
-- The one-time checkout has no hard-coded product ID; it uses the required product slug endpoint and shows hosted checkout pricing when the factory registration is live.
+After repair, rerun every new `.factory/claims.json` command first from `/demo`, then require a true offline reload, all representative MIME encodings, invalid-input rejection, complete HTML/CSV receipts, sample-state axe, live checkout, headers/routes, desktop and 390 px layouts.
