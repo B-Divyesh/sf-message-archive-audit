@@ -1,7 +1,16 @@
 (() => {
+  const main = document.querySelector('main')
   const heading = document.querySelector('h1')
   const announcer = document.querySelector('[data-route-announcer]')
-  if (!(heading instanceof HTMLElement) || !(announcer instanceof HTMLElement)) return
+  if (!(main instanceof HTMLElement) || !(heading instanceof HTMLElement) || !(announcer instanceof HTMLElement)) return
+  document.addEventListener('click', event => {
+    const link = event.target instanceof Element ? event.target.closest('a.skip[href="#main"]') : null
+    if (!(link instanceof HTMLAnchorElement)) return
+    event.preventDefault()
+    history.pushState(null, '', '#main')
+    main.focus({ preventScroll: true })
+    main.scrollIntoView({ block: 'start' })
+  })
   const focusRoute = () => {
     heading.tabIndex = -1
     heading.focus({ preventScroll: true })

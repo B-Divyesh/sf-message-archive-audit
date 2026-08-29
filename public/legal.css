@@ -130,6 +130,12 @@ p,
 li {
   max-width: 68ch;
 }
+.return-home {
+  min-height: 44px;
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+}
 .sr-only {
   position: absolute;
   width: 1px;

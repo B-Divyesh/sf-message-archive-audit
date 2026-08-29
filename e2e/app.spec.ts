@@ -227,6 +227,25 @@ test('keyboard entry, skip link, legal shells, and designed 404 remain operable'
     await expect(page.locator('h1')).toHaveCount(1)
     await expect(page.locator('header')).toBeVisible()
     await expect(page.locator('footer')).toBeVisible()
+    await page.keyboard.press('Tab')
+    await expect(page.getByRole('link', { name: 'Skip to main content' })).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('main')).toBeFocused()
+  }
+
+  await page.goto('/privacy/')
+  await expect(page.getByText('Use “Clear local report” to remove a saved summary.')).toBeVisible()
+
+  await page.goto('/404.html')
+  const returnHome = page.getByRole('link', { name: 'Return to Archive Audit' })
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport)
+    const target = await returnHome.evaluate(element => {
+      const rect = element.getBoundingClientRect()
+      return { width: rect.width, height: rect.height }
+    })
+    expect(target.width).toBeGreaterThanOrEqual(44)
+    expect(target.height).toBeGreaterThanOrEqual(44)
   }
 })
 

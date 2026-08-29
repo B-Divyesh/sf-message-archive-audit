@@ -6,7 +6,7 @@ import type { ArchiveReport } from './types'
 
 const isDemo = location.pathname.replace(/\/$/, '') === '/demo' || new URLSearchParams(location.search).get('demo') === '1'
 const databaseName = 'archive-audit'
-const buildId = 'polish-1'
+const buildId = 'repair-4'
 
 let report: ArchiveReport | null = null
 let mailInput: HTMLInputElement
