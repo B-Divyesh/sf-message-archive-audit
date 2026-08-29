@@ -1,4 +1,4 @@
-const CACHE = 'archive-audit-v4'
+const CACHE = 'archive-audit-v5'
 const SHELL = [
   '/', '/index.html', '/demo', '/privacy/', '/terms/', '/offline.html',
   '/manifest.webmanifest', '/hero-notebook.webp', '/social-card.webp', '/legal.css', '/route-focus.js', '/theme.js',

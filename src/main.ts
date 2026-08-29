@@ -6,7 +6,7 @@ import type { ArchiveReport, FolderFile } from './types'
 
 const isDemo = location.pathname.replace(/\/$/, '') === '/demo' || new URLSearchParams(location.search).get('demo') === '1'
 const databaseName = 'archive-audit'
-const buildId = 'repair-6'
+const buildId = 'repair-7'
 const siteUrl = 'https://message-archive-audit.sociobot.in'
 
 let report: ArchiveReport | null = null
@@ -15,6 +15,9 @@ let folderInput: HTMLInputElement
 let results: HTMLElement
 let announce: HTMLElement
 let routeAnnounce: HTMLElement
+// Demo preferences are deliberately kept only for the lifetime of this page.
+// Reading the real preference here would make the sandbox observe real state.
+let demoThemeDark = false
 
 const $ = <T extends HTMLElement>(selector: string) => document.querySelector<T>(selector)!
 const plural = (count: number, word: string) => `${count.toLocaleString()} ${word}${count === 1 ? '' : 's'}`
@@ -153,7 +156,7 @@ function renderApp() {
   routeAnnounce = $('#route-announce')
   $('#audit').addEventListener('click', audit)
   $('#theme').addEventListener('click', toggleTheme)
-  setTheme(localStorage.getItem('archive-audit-theme') === 'dark')
+  setTheme(isDemo ? demoThemeDark : localStorage.getItem('archive-audit-theme') === 'dark')
   if (isDemo) $('#reset-demo').addEventListener('click', loadDemo)
   focusRoute()
 }
@@ -287,7 +290,8 @@ async function clearReport() {
 
 function toggleTheme() {
   const dark = document.documentElement.dataset.theme !== 'dark'
-  localStorage.setItem('archive-audit-theme', dark ? 'dark' : 'light')
+  if (isDemo) demoThemeDark = dark
+  else localStorage.setItem('archive-audit-theme', dark ? 'dark' : 'light')
   setTheme(dark)
 }
 

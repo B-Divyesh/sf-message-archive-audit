@@ -72,23 +72,86 @@ test('@claim:mime-audit audits EML and MBOX plus base64 and 7-bit attachments', 
 test('@claim:local-only keeps the complete demo flow on-origin and out of real storage', async ({ page }) => {
   const requests: string[] = []
   page.on('request', request => requests.push(request.url()))
-  await waitForDemo(page)
-  const databases = await page.evaluate(async () => (await indexedDB.databases()).map(database => database.name))
-  expect(databases).not.toContain('archive-audit')
+  await page.goto('/')
+  await page.locator('#mail-files').setInputFiles({
+    name: 'real-before-demo.eml', mimeType: 'message/rfc822', buffer: Buffer.from(validEml('Real report before demo')),
+  })
+  await page.getByRole('button', { name: 'Audit selected files' }).click()
+  await expect(page.getByText('Real report before demo', { exact: true })).toBeVisible()
+  await page.evaluate(() => localStorage.setItem('archive-audit-theme', 'dark'))
+  const realStorageBeforeDemo = await page.evaluate(() => Object.fromEntries(Object.keys(localStorage).sort().map(key => [key, localStorage.getItem(key)])))
+  const realReportBeforeDemo = await page.evaluate(async () => {
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('archive-audit', 1)
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+    return await new Promise<string>((resolve, reject) => {
+      const request = database.transaction('reports').objectStore('reports').get('latest')
+      request.onsuccess = () => resolve(JSON.stringify(request.result))
+      request.onerror = () => reject(request.error)
+    })
+  })
+
+  await page.goto('/?demo=1')
+  await expect(page.getByText('Demo — sample data, nothing is saved')).toBeVisible()
+  await expect(page.getByText('Archive inventory complete')).toBeVisible()
+  await expect(page.locator('html')).not.toHaveAttribute('data-theme', 'dark')
+  await page.getByRole('button', { name: 'Use dark color theme' }).click()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  expect(await page.evaluate(() => Object.fromEntries(Object.keys(localStorage).sort().map(key => [key, localStorage.getItem(key)])))).toEqual(realStorageBeforeDemo)
+  const realReportDuringDemo = await page.evaluate(async () => {
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('archive-audit', 1)
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+    return await new Promise<string>((resolve, reject) => {
+      const request = database.transaction('reports').objectStore('reports').get('latest')
+      request.onsuccess = () => resolve(JSON.stringify(request.result))
+      request.onerror = () => reject(request.error)
+    })
+  })
+  expect(realReportDuringDemo).toBe(realReportBeforeDemo)
+
+  await page.getByRole('link', { name: 'Start for real' }).click()
+  await expect(page).toHaveURL(/\/$/)
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await expect(page.getByText('Real report before demo', { exact: true })).toBeVisible()
+  expect(await page.evaluate(() => Object.fromEntries(Object.keys(localStorage).sort().map(key => [key, localStorage.getItem(key)])))).toEqual(realStorageBeforeDemo)
+  const realReportAfterDemo = await page.evaluate(async () => {
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('archive-audit', 1)
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+    return await new Promise<string>((resolve, reject) => {
+      const request = database.transaction('reports').objectStore('reports').get('latest')
+      request.onsuccess = () => resolve(JSON.stringify(request.result))
+      request.onerror = () => reject(request.error)
+    })
+  })
+  expect(realReportAfterDemo).toBe(realReportBeforeDemo)
   expect(requests.length).toBeGreaterThan(0)
   expect(requests.every(url => new URL(url).origin === 'http://127.0.0.1:4173')).toBe(true)
 })
 
-test('@claim:offline-reload reloads the working demo with the network disabled', async ({ page, context }) => {
-  await waitForDemo(page)
-  await page.evaluate(async () => { await navigator.serviceWorker.ready })
-  await page.reload()
-  await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true)
-  await context.setOffline(true)
-  await page.reload()
-  await expect(page).toHaveTitle('Demo — Archive Audit')
-  await expect(page.getByText('Archive inventory complete')).toBeVisible()
-  await expect(page.getByText('4', { exact: true }).first()).toBeVisible()
+test('@claim:offline-reload reloads the working demo with the network disabled', async ({ browser }) => {
+  const offlineContext = await browser.newContext({ baseURL: 'http://127.0.0.1:4173' })
+  const offlinePage = await offlineContext.newPage()
+  try {
+    await waitForDemo(offlinePage)
+    await offlinePage.evaluate(async () => { await navigator.serviceWorker.ready })
+    await offlinePage.reload()
+    await expect.poll(() => offlinePage.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true)
+    await offlineContext.setOffline(true)
+    await offlinePage.reload()
+    await expect(offlinePage).toHaveTitle('Demo — Archive Audit')
+    await expect(offlinePage.getByText('Archive inventory complete')).toBeVisible()
+    await expect(offlinePage.getByText('4', { exact: true }).first()).toBeVisible()
+  } finally {
+    await offlineContext.close()
+  }
 })
 
 test('@claim:receipt-exports exports complete HTML, CSV, and JSON receipts', async ({ page }) => {
@@ -394,6 +457,9 @@ test('desktop and 390px mobile have no overflow, undersized controls, or console
     await page.setViewportSize(viewport)
     await page.goto('/')
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+    if (viewport.width === 390) {
+      await expect(page.locator('header').getByRole('link', { name: 'Privacy' })).toBeVisible()
+    }
     const smallTargets = await page.locator('a:visible, button:visible, input:visible, summary:visible, [tabindex="0"]:visible').evaluateAll(elements => elements.flatMap(element => {
       const rect = element.getBoundingClientRect()
       return rect.width < 44 || rect.height < 44 ? [`${element.tagName}:${(element.textContent || (element as HTMLInputElement).type).trim()}:${rect.width}x${rect.height}`] : []

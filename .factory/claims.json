@@ -8,10 +8,10 @@
   },
   {
     "id": "local-only",
-    "claim": "Message and attachment bytes stay on this device, and demo data never enters real report storage.",
+    "claim": "Message and attachment bytes stay on this device, and demo state stays in memory without changing real audit or preference storage.",
     "where": "landing facts, privacy page, README",
     "test": "npm run test:e2e -- --grep @claim:local-only",
-    "sandbox": "fresh browser context at /demo; record all requests and inspect IndexedDB database names"
+    "sandbox": "fresh browser context with a saved real audit and theme preference; open /demo, operate its theme control, leave demo, record requests, and prove localStorage and IndexedDB are byte-for-byte unchanged"
   },
   {
     "id": "offline-reload",
