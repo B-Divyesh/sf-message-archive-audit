@@ -29,7 +29,7 @@ Base reviewed: `e367011accc98439ea067ebff24546cf2a484271`
 - `npm test`: 21 unit tests passed.
 - `npm run lint`: passed.
 - `npm run build`: passed; `dist/` produced; JavaScript is 23.85 kB raw / 8.99 kB gzip.
-- `npm run test:e2e`: 21 browser tests passed, including all 14 registered claims.
-- Every one of the 14 exact `.factory/claims.json` commands passed independently after `npm ci` in a fresh clone of `80e46b4`; the final clean clone at `053b5a1` then passed the complete unit, lint, build, and 21-test browser suite.
+- `npm run test:e2e`: 21 browser tests passed, including all 13 registered claims.
+- Every one of the 13 exact `.factory/claims.json` commands passed independently after `npm ci` in a fresh clone of `80e46b4`; the final clean clone at `053b5a1` then passed the complete unit, lint, build, and 21-test browser suite.
 - Local cold-demo evidence: `.factory/evidence/polish-2-local/screenshot-desktop.png`, `.factory/evidence/polish-2-local/screenshot-mobile.png`, and `verify.json` (no console errors; title/lang/one h1/main/alt checks pass).
 - Live evidence after deployment: `https://message-archive-audit.sociobot.in/?demo=1`; `.factory/evidence/polish-2-live/screenshot-desktop.png`, `.factory/evidence/polish-2-live/screenshot-mobile.png`, and `verify.json`. A fresh 390px browser confirmed banner, `4/2/2/0` metrics, visible results, exact demo OG/Twitter metadata, limits heading, Privacy h1 focus/announcement, and no console errors. `GET /missing-polish-2` returned the designed 404 with HTTP 404.
