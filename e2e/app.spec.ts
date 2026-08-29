@@ -19,6 +19,18 @@ test('@claim:mime-audit audits EML and MBOX plus base64 and 7-bit attachments', 
   await expect(page.getByText('meter-reading.txt')).toBeVisible()
   await expect(page.getByText('Account closure confirmed')).toBeVisible()
   await expect(page.getByText('Forwarding address saved')).toBeVisible()
+
+  const zeroByteAttachment = `From: QA <qa@example.test>\nSubject: Zero byte attachment\nDate: Thu, 01 Aug 2026 12:00:00 +0000\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=z\n\n--z\nContent-Type: application/octet-stream; name="empty.bin"\nContent-Disposition: attachment; filename="empty.bin"\nContent-Transfer-Encoding: base64\n\n--z--`
+  await page.goto('/')
+  await page.locator('#mail-files').setInputFiles({
+    name: 'zero-byte.eml', mimeType: 'message/rfc822', buffer: Buffer.from(zeroByteAttachment),
+  })
+  await page.getByRole('button', { name: 'Audit selected files' }).click()
+  await expect(page.locator('.metrics > div').filter({ hasText: 'attachments named' }).locator('b')).toHaveText('1')
+  await expect(page.locator('.metrics > div').filter({ hasText: 'attachments hashed' }).locator('b')).toHaveText('1')
+  const zeroByteRow = page.locator('tbody tr').filter({ hasText: 'empty.bin' })
+  await expect(zeroByteRow).toContainText('0 bytes')
+  await expect(zeroByteRow).toContainText('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
 })
 
 test('@claim:local-only keeps the complete demo flow on-origin and out of real storage', async ({ page }) => {

@@ -10,6 +10,14 @@ describe('email parser', () => {
     expect(message.attachments[0].hash).toBe(await sha256(new TextEncoder().encode('hello')))
   })
 
+  it('retains and hashes a named zero-byte base64 attachment', async () => {
+    const message = await parseEml(envelope('Content-Type: application/octet-stream; name="empty.bin"\r\nContent-Disposition: attachment; filename="empty.bin"\r\nContent-Transfer-Encoding: base64\r\n\r\n'))
+    expect(message.attachments).toEqual([{
+      name: 'empty.bin', source: 'embedded', size: 0,
+      hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', status: 'verified',
+    }])
+  })
+
   it('decodes and hashes standard 7-bit MIME attachment bytes', async () => {
     const message = await parseEml(envelope('Content-Type: text/plain; name="notes.txt"\r\nContent-Disposition: attachment; filename="notes.txt"\r\nContent-Transfer-Encoding: 7bit\r\n\r\nplain attachment'))
     expect(message.attachments).toEqual([{

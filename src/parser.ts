@@ -82,7 +82,7 @@ export async function parseEml(raw: string): Promise<Message> {
   const boundary = parameter(header(top, 'content-type'), 'boundary')
   const escapedBoundary = boundary.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   const parts = boundary
-    ? raw.split(new RegExp(`(?:^|\\r?\\n)--${escapedBoundary}(?:--)?[ \\t]*(?:\\r?\\n|$)`)).slice(1)
+    ? raw.split(new RegExp(`^--${escapedBoundary}(?:--)?[ \\t]*(?:\\r?\\n|$)`, 'gm')).slice(1)
     : [raw]
   const attachments: Attachment[] = []
 
@@ -96,9 +96,10 @@ export async function parseEml(raw: string): Promise<Message> {
     const name = parameter(disposition, 'filename') || parameter(contentType, 'name')
     if (!name || (!/attachment|inline/i.test(disposition) && !/(?:^|;)\s*name\*?=/i.test(contentType))) continue
 
-    const body = part.slice(headEnd + separator.length)
+    // The final line break belongs to the following MIME boundary, not the payload.
+    const body = part.slice(headEnd + separator.length).replace(/\r?\n$/, '')
     const encoding = header(partHeaders, 'content-transfer-encoding')
-    if (body.length > 0) {
+    if (body.length > 0 || encoding.length > 0) {
       try {
         const bytes = decodeBody(body, encoding)
         attachments.push({
