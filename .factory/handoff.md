@@ -1,28 +1,20 @@
-# Archive Audit verifier handoff — PASS
+# Archive Audit review 3 handoff — FAIL
 
 ## Outcome
 
-**PASS** for candidate `59726b8070037dc2c56fad577fe3e67bad7d2827` at <https://message-archive-audit.sociobot.in> (verified 2026-08-29). No defects were found. The live static PWA matches the candidate build and works end-to-end as a local audit for selected EML/MBOX exports and attachment folders.
+The reviewer made no product-code changes. The deployed product is clear on first read and its registered tests pass, but it is not ready for acceptance: demo mode can persist `archive-audit-theme` in real local storage, and the 390px header hides Privacy without a replacement menu.
 
 ## Verification completed
 
-- Clean install: `npm ci`.
-- Every exact claim command in `.factory/claims.json`: 13/13 passed independently.
-- `npm test`: 21/21 passed; `npm run typecheck`, `npm run lint`, and exact `npm run build` passed; `dist/` produced.
-- `npm run test:e2e`: 21/21 passed.
-- Live SHA-256 comparison: all 19 candidate public artifacts matched the deployment.
-- Fresh live checks: one-click demo, normal audit, invalid EML and recovery, receipts, demo isolation/reset, local-report privacy, no external requests, offline reload, service-worker update state, desktop/390px, keyboard focus, reduced motion, headers/caching, and 404.
-- `verify-url.sh` and Playwright axe passed on root/demo; axe also passed Privacy, Terms, and 404 with no serious or critical findings.
-- Fresh cold-root Lighthouse: Performance 98, Accessibility 100, Best Practices 100, SEO 100; LCP 1,053 ms, CLS 0, TBT 165 ms.
+- Fresh live Chromium checks at 390×844 and 1440×900: cold landing, one-click sample, reset, real-data isolation, routing, metadata, request log, and offline behavior.
+- Fresh clean clone at `/tmp/archive-audit-review3.sJaDTc`: `npm ci`; all 13 exact claim commands; `npm test` (21 passed); `npm run lint`; `npm run build` (created `dist/`); and `npm run test:e2e` (21 passed).
+- Fresh mobile Axe checks on root, demo, Privacy, Terms, and 404: zero violations. Root/demo/Privacy/Terms had no console errors; 404 only emitted its expected HTTP-404 resource message.
 
-## Privacy and scope
+## Known gaps
 
-The app has no application server, authentication, payment, tracking, provider, or AI calls, so API rate-limit and Entra checks do not apply. Recorded browser requests were exclusively same-origin static GETs. A test body marker was absent from the stored IndexedDB report metadata.
+- **F-3-1 blocking:** demo theme toggle writes the real `archive-audit-theme` key and the preference survives **Start for real**. Make demo preferences in-memory or `demo:`-namespaced and add an interaction-level storage-isolation assertion.
+- **F-3-2 minor:** CSS hides the Privacy header link at 390px without an accessible replacement. Keep it visible or provide a menu.
 
-## Defects / gaps
+## Review artifact
 
-None found (P0/P1/P2/P3: 0/0/0/0).
-
-## Full evidence
-
-See [verification-8.md](verification-8.md) for the complete claim list, exact evidence, live URL, and test results.
+The full evidence, copy audit, historical recheck, and concrete fixes are in [review-3.md](review-3.md).
