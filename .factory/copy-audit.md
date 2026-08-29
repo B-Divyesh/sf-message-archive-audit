@@ -54,6 +54,9 @@ The first screen states the job, names the person facing lost access, and gives 
 | Matched to one message attachment | 5 |
 | Not referenced by a message attachment | 6 |
 | Review duplicate names, choose any missing files, or retain these findings in the receipt. | 14 |
+| 1 attachment reference could not be matched to a separate folder file. | 11 |
+| 1 selected folder file has duplicate-name matches and cannot be linked uniquely. | 12 |
+| 1 selected folder file was not referenced by a named message attachment. | 12 |
 
 ## Terminology
 

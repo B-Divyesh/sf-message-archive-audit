@@ -1,0 +1,55 @@
+{
+  "standards": {
+    "heading": "Archive inventory complete",
+    "metrics": "1\nmessages\n1\nattachments named\n1\nattachments hashed\n0\nreferences missing",
+    "ledger": "Message ledger — 1 message\nMESSAGE\tATTACHMENT\tSTATUS\tSHA-256\n\nCafé receipt\nJosé Archive <jose@example.test> · Tue, 02 Jan 2024 10:00:00 +0000\n\tquarterly report.pdf\n5 bytes\n\tEmbedded and hashed\tc1cda26362828b69266512052b97cb3729e3b052e4ade47c0a1e3383defe73c7"
+  },
+  "inventory": {
+    "heading": "Check attachment inventory",
+    "metrics": "2\nmessages\n2\nattachments named\n2\nattachments hashed\n1\nreferences missing",
+    "messageLedger": "Message ledger — 2 messages\nMESSAGE\tATTACHMENT\tSTATUS\tSHA-256\n\nFirst invoice\nArchive <archive@example.test> · Tue, 02 Jan 2024 10:00:00 +0000\n\tinvoice.pdf\n8 bytes\n\tDuplicate name; match is not unique\t67f1fdcd2cdd1f5dbf7f7657b26be84f54951fd3c77f121d4c0d5a5628eed3c6\n\nSecond invoice\nArchive <archive@example.test> · Tue, 02 Jan 2024 10:00:00 +0000\n\tinvoice.pdf\nNo readable bytes\n\tMissing from folder\t—",
+    "folderLedger": "Selected folder inventory — 2 files\nFOLDER PATH\tSTATUS\tSHA-256\n\nattachments/invoice.pdf\n8 bytes\n\tDuplicate name; match is not unique\t67f1fdcd2cdd1f5dbf7f7657b26be84f54951fd3c77f121d4c0d5a5628eed3c6\n\nattachments/photos/orphan-photo.jpg\n5 bytes\n\tNot referenced by a message attachment\t55c64d0fcd6f9d5f7c828093857e3fdfda68478bb4e9bd24d481ef391c7804e8"
+  },
+  "receipts": {
+    "htmlHasOrphan": true,
+    "csvHasOrphan": true,
+    "jsonFolderFiles": [
+      {
+        "path": "attachments/invoice.pdf",
+        "status": "ambiguous"
+      },
+      {
+        "path": "attachments/photos/orphan-photo.jpg",
+        "status": "unmatched"
+      }
+    ]
+  },
+  "accessibility": {
+    "desktopSeriousCritical": [],
+    "mobileSeriousCritical": []
+  },
+  "mobile": {
+    "overflow": false,
+    "smallTargets": [],
+    "reducedMotion": "1e-05s"
+  },
+  "keyboard": {
+    "skipFocusedMain": true
+  },
+  "offline": {
+    "restored": true,
+    "title": "Demo — Archive Audit",
+    "cache": [
+      "archive-audit-v4"
+    ]
+  },
+  "privacy": {
+    "origins": [
+      "https://message-archive-audit.sociobot.in"
+    ],
+    "methods": [
+      "GET"
+    ]
+  },
+  "errors": []
+}
