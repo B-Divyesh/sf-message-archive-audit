@@ -12,10 +12,11 @@ describe('static response policy', () => {
     expect(config.globalHeaders['Referrer-Policy']).toBe('strict-origin-when-cross-origin')
   })
 
-  it('uses immutable hashed-asset caching and a real 404 response override', () => {
+  it('uses immutable hashed-asset caching, a known demo rewrite, and a real 404 response override', () => {
     expect(config.routes.find((route: { route: string }) => route.route === '/assets/*').headers['Cache-Control']).toContain('immutable')
     expect(config.routes.find((route: { route: string }) => route.route === '/404').statusCode).toBe(404)
+    expect(config.routes.find((route: { route: string }) => route.route === '/demo').rewrite).toBe('/index.html')
     expect(config.responseOverrides['404'].rewrite).toBe('/404.html')
-    expect(config.navigationFallback.exclude).toContain('/404')
+    expect(config.navigationFallback).toBeUndefined()
   })
 })

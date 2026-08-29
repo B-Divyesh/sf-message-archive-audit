@@ -96,6 +96,9 @@ button,
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
 }
 .demo-banner div {
   display: flex;
@@ -332,6 +335,7 @@ main {
 }
 .results {
   margin-top: 30px;
+  scroll-margin-top: 64px;
 }
 .results:empty {
   display: none;

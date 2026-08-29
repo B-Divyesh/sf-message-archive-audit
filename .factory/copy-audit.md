@@ -17,29 +17,29 @@ Audited 2026-08-29. Counts treat hyphenated terms and file formats as one word. 
 | Free. | 1 |
 | No account. | 2 |
 
-The first screen says the job, names the person facing lost access, and gives one prominent sample action. It reads aloud in one breath.
+The first screen states the job, names the person facing lost access, and gives one prominent sample action. It reads aloud in one breath.
 
 ## Remaining landing copy
 
 | Copy | Words |
 | --- | ---: |
-| Choose your message export | 4 |
-| Message exports | 2 |
-| MBOX or EML files | 4 |
+| Choose an email export | 4 |
+| Email exports | 2 |
+| EML message files or MBOX email collections | 7 |
 | Attachment folder optional | 3 |
 | Choose files from the exported attachment folder | 7 |
 | Audit selected files | 3 |
-| Reads standard MIME EML and text MBOX. | 7 |
+| Reads EML message files and MBOX email collections. | 8 |
 | It cannot read encrypted or provider-only stores. | 7 |
 | Make a receipt in three steps | 6 |
-| Choose EML or MBOX exports and an optional attachment folder. | 10 |
-| Check message counts, named attachments, missing files, and SHA-256 hashes. | 10 |
-| Save a complete HTML, CSV, or JSON receipt beside the source export. | 12 |
+| Choose EML message files or MBOX email collections and an optional attachment folder. | 12 |
+| Check message counts, named attachments, missing files, and file hashes (SHA-256). | 10 |
+| Save a complete HTML, CSV, or JSON receipt beside the email export. | 12 |
 | Your files remain under your control | 7 |
-| Archive bytes stay in this browser. | 6 |
-| A real audit stores only its report until you clear it. | 10 |
-| Demo reports stay in memory. | 5 |
-| The receipt inventories selected files. | 5 |
+| Files stay in this browser. | 5 |
+| A real audit saves a local audit summary until you clear it. | 12 |
+| Demo audit summaries stay in memory. | 6 |
+| A downloaded receipt inventories selected files. | 6 |
 | It cannot prove that a provider included every message. | 9 |
 | Check email exports before account or device access ends. | 9 |
 
@@ -47,11 +47,11 @@ The first screen says the job, names the person facing lost access, and gives on
 
 | Concept | One term |
 | --- | --- |
-| Source mail file | export |
+| Source mail input | email export |
 | Inspection operation | audit |
-| Saved result | receipt |
+| Local stored metadata | local audit summary |
+| Downloaded output | receipt |
 | Email item | message |
 | Named included file | attachment |
 | Optional disk directory | attachment folder |
 | Disposable sample state | demo |
-| Persistent user state | real audit report |

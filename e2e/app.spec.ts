@@ -6,7 +6,7 @@ import { readFile } from 'node:fs/promises'
 const validEml = (subject = 'Saved message', body = 'private body marker') => `From: Sender <sender@example.test>\nSubject: ${subject}\nDate: Fri, 05 Jan 2024 08:00:00 +0000\n\n${body}`
 
 async function waitForDemo(page: Page) {
-  await page.goto('/demo')
+  await page.goto('/?demo=1')
   await expect(page.getByText('Demo — sample data, nothing is saved')).toBeVisible()
   await expect(page.getByText('Archive inventory complete')).toBeVisible()
 }
@@ -93,7 +93,7 @@ test('@claim:report-persistence restores a real report without storing source bo
   expect(stored).not.toContain('private body marker')
   await page.reload()
   await expect(page.getByText('Saved message', { exact: true })).toBeVisible()
-  await expect(page.getByText('report saved on this device')).toBeVisible()
+  await expect(page.getByText('local audit summary saved on this device')).toBeVisible()
 })
 
 test('@claim:free-use exposes the audit and every receipt without an account or purchase', async ({ page }) => {
@@ -104,6 +104,22 @@ test('@claim:free-use exposes the audit and every receipt without an account or 
   await expect(page.getByRole('button', { name: 'Export CSV' })).toBeEnabled()
   await expect(page.getByRole('button', { name: 'Export JSON' })).toBeEnabled()
   await expect(page.getByText(/purchase|upgrade/i)).toHaveCount(0)
+})
+
+test('@claim:demo-no-setup opens the completed sample in the viewport from a clean home page', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+  await expect(page.locator('#mail-files')).toHaveCount(1)
+  await page.getByRole('link', { name: 'Try it with sample data' }).click()
+  await expect(page).toHaveURL(/\/?\?demo=1$/)
+  await expect(page.getByText('Demo — sample data, nothing is saved')).toBeVisible()
+  await expect(page.getByText('Archive inventory complete')).toBeVisible()
+  await expect.poll(() => page.locator('#results').evaluate(element => {
+    const box = element.getBoundingClientRect()
+    return box.top < window.innerHeight && box.bottom > 0
+  })).toBe(true)
+  const databases = await page.evaluate(async () => (await indexedDB.databases()).map(database => database.name))
+  expect(databases).not.toContain('archive-audit')
 })
 
 test('rejects empty and nonsense EML instead of producing an audit stamp', async ({ page }) => {
@@ -142,13 +158,13 @@ test('exports a supplied-folder hash and neutralizes spreadsheet formulas', asyn
 
 test('demo sample has no serious accessibility violations and the ledger is keyboard scrollable', async ({ page }) => {
   await waitForDemo(page)
-  for (const route of ['/demo', '/privacy/', '/terms/', '/404.html']) {
+  for (const route of ['/?demo=1', '/privacy/', '/terms/', '/404.html']) {
     await page.goto(route)
-    if (route === '/demo') await expect(page.getByText('Archive inventory complete')).toBeVisible()
+    if (route === '/?demo=1') await expect(page.getByText('Archive inventory complete')).toBeVisible()
     const results = await new AxeBuilder({ page }).analyze()
     expect(results.violations.filter(violation => ['serious', 'critical'].includes(violation.impact || '')), route).toEqual([])
   }
-  await page.goto('/demo')
+  await page.goto('/?demo=1')
   await expect(page.getByText('Archive inventory complete')).toBeVisible()
   const ledger = page.locator('.table-wrap')
   await ledger.focus()
@@ -178,9 +194,9 @@ test('keyboard entry, skip link, legal shells, and designed 404 remain operable'
   await expect(page.getByRole('link', { name: 'Skip to main content' })).toBeFocused()
   await page.keyboard.press('Enter')
   await expect(page.locator('main')).toBeFocused()
-  await page.locator('a[href="/demo"]').first().focus()
+  await page.locator('a[href="/?demo=1"]').first().focus()
   await page.keyboard.press('Enter')
-  await expect(page).toHaveURL(/\/demo$/)
+  await expect(page).toHaveURL(/\/?\?demo=1$/)
 
   for (const route of ['/privacy/', '/terms/', '/404.html']) {
     await page.goto(route)
@@ -189,4 +205,37 @@ test('keyboard entry, skip link, legal shells, and designed 404 remain operable'
     await expect(page.locator('header')).toBeVisible()
     await expect(page.locator('footer')).toBeVisible()
   }
+})
+
+test('every public route has its own complete metadata and the deployment config preserves 404s', async ({ page }) => {
+  const routes = [
+    ['/', 'Archive Audit — check an email export'],
+    ['/?demo=1', 'Demo — Archive Audit'],
+    ['/privacy/', 'Privacy — Archive Audit'],
+    ['/terms/', 'Terms — Archive Audit'],
+    ['/404.html', 'Page not found — Archive Audit'],
+  ]
+  for (const [route, title] of routes) {
+    await page.goto(route)
+    await expect(page).toHaveTitle(title)
+    for (const selector of ['meta[name="description"]', 'link[rel="canonical"]', 'meta[property="og:title"]', 'meta[property="og:description"]', 'meta[property="og:image"]', 'meta[name="twitter:card"]', 'meta[name="twitter:title"]', 'meta[name="twitter:description"]', 'meta[name="twitter:image"]', 'meta[name="theme-color"]', 'link[rel="icon"]', 'link[rel="apple-touch-icon"]']) {
+      await expect(page.locator(selector), `${route} missing ${selector}`).toHaveCount(1)
+    }
+  }
+  const config = JSON.parse(await readFile('public/staticwebapp.config.json', 'utf8'))
+  expect(config.navigationFallback).toBeUndefined()
+  expect(config.routes).toContainEqual({ route: '/demo', rewrite: '/index.html' })
+  expect(config.responseOverrides['404']).toEqual({ rewrite: '/404.html' })
+})
+
+test('route changes focus the destination heading and announce it', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('link', { name: 'Privacy' }).first().click()
+  await expect(page).toHaveURL(/\/privacy\/$/)
+  await expect(page.locator('h1')).toBeFocused()
+  await expect(page.locator('[data-route-announcer]')).toHaveText('Privacy — Archive Audit')
+  await page.goBack()
+  await expect(page).toHaveURL(/\/$/)
+  await expect(page.locator('h1')).toBeFocused()
+  await expect(page.locator('#route-announce')).toHaveText('Archive Audit home')
 })

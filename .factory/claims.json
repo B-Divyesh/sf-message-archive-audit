@@ -40,5 +40,12 @@
     "where": "landing facts, README",
     "test": "npm run test:e2e -- --grep @claim:free-use",
     "sandbox": "fresh browser context; enter /demo without setup and assert all export actions are available"
+  },
+  {
+    "id": "demo-no-setup",
+    "claim": "The sample opens a complete audit with no setup.",
+    "where": "landing page",
+    "test": "npm run test:e2e -- --grep @claim:demo-no-setup",
+    "sandbox": "fresh browser context at /; click Try it with sample data; assert no real audit storage and completed results visible in the viewport"
   }
 ]

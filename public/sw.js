@@ -1,7 +1,7 @@
-const CACHE = 'archive-audit-v2'
+const CACHE = 'archive-audit-v3'
 const SHELL = [
   '/', '/index.html', '/demo', '/privacy/', '/terms/', '/offline.html',
-  '/manifest.webmanifest', '/hero-notebook.webp', '/social-card.webp',
+  '/manifest.webmanifest', '/hero-notebook.webp', '/social-card.webp', '/legal.css', '/route-focus.js', '/theme.js',
   '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png',
 ]
 

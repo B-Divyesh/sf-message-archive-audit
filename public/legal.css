@@ -13,6 +13,16 @@
   color: var(--ink);
   background: var(--paper);
 }
+[data-theme="dark"] {
+  --paper: #20231e;
+  --surface: #2a2e27;
+  --ink: #f4efe2;
+  --muted: #bcc4b7;
+  --line: #697366;
+  --green: #87c8a0;
+  --green-ink: #11291e;
+  --ochre: #ffc477;
+}
 * {
   box-sizing: border-box;
 }
@@ -73,6 +83,7 @@ a {
 }
 nav {
   display: flex;
+  align-items: center;
   gap: 8px;
 }
 nav a {
@@ -80,6 +91,17 @@ nav a {
   padding: 0 7px;
   display: inline-flex;
   align-items: center;
+}
+nav button {
+  width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  background: transparent;
+  cursor: pointer;
+}
+nav button:hover {
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
 }
 main {
   max-width: 760px;
@@ -108,6 +130,14 @@ p,
 li {
   max-width: 68ch;
 }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
 footer {
   max-width: 960px;
   margin: auto;
@@ -125,7 +155,9 @@ footer a {
   align-items: center;
   padding: 0 5px;
 }
-a:focus-visible {
+a:focus-visible,
+button:focus-visible,
+h1:focus-visible {
   outline: 3px solid var(--ochre);
   outline-offset: 3px;
 }
@@ -133,11 +165,11 @@ a:focus-visible {
   .top {
     padding: 8px 12px;
   }
-  .top nav a:first-child {
-    display: none;
-  }
   .brand {
     font-size: 17px;
+  }
+  .top nav a:nth-child(2) {
+    display: none;
   }
   main {
     padding: 28px 16px 52px;

@@ -7,6 +7,7 @@
     "X-Frame-Options": "DENY"
   },
   "routes": [
+    { "route": "/demo", "rewrite": "/index.html" },
     { "route": "/404", "statusCode": 404 },
     { "route": "/assets/*", "headers": { "Cache-Control": "public, max-age=31536000, immutable" } },
     { "route": "/icons/*", "headers": { "Cache-Control": "public, max-age=31536000, immutable" } },
@@ -15,10 +16,6 @@
     { "route": "/sw.js", "headers": { "Cache-Control": "no-cache" } },
     { "route": "/index.html", "headers": { "Cache-Control": "no-cache" } }
   ],
-  "navigationFallback": {
-    "rewrite": "/index.html",
-    "exclude": ["/404", "/404/*", "/staticwebapp.config.json", "/privacy/*", "/terms/*", "/offline.html", "/assets/*", "/icons/*", "*.css", "*.js", "*.png", "*.webp", "*.xml", "*.txt", "*.webmanifest"]
-  },
   "responseOverrides": {
     "404": { "rewrite": "/404.html" }
   }
