@@ -30,5 +30,5 @@ Base reviewed: `e367011accc98439ea067ebff24546cf2a484271`
 - `npm run lint`: passed.
 - `npm run build`: passed; `dist/` produced; JavaScript is 23.85 kB raw / 8.99 kB gzip.
 - `npm run test:e2e`: 21 browser tests passed, including all 14 registered claims.
-- Every command listed in `.factory/claims.json` is run again from a clean clone before final handoff.
-- Local screenshots and post-deploy cold checks are recorded in the final handoff.
+- Every one of the 14 exact `.factory/claims.json` commands passed independently after `npm ci` in a fresh clone of `80e46b4`; the final clean clone at `053b5a1` then passed the complete unit, lint, build, and 21-test browser suite.
+- Local cold-demo evidence: `.factory/evidence/polish-2-local/screenshot-desktop.png`, `.factory/evidence/polish-2-local/screenshot-mobile.png`, and `verify.json` (no console errors; title/lang/one h1/main/alt checks pass).

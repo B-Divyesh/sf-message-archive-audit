@@ -13,13 +13,14 @@ Polish round 2 closes F-2-1 through F-2-8 and rechecks every F-1 finding. The pr
 
 See [polish-2.md](polish-2.md) for the finding-by-finding mapping.
 
-## Local verification
+## Exact verification
 
-- `npm test` — 21 passed.
-- `npm run lint` — passed.
-- `npm run build` — passed; `dist/` produced; JavaScript 23.85 kB raw / 8.99 kB gzip.
-- `npm run test:e2e` — 21 passed, including all 14 registered claim tests.
+- Fresh clone (`80e46b48db48e21ccfa445ce66d13cc842409374`): `npm ci`, then every exact command in `.factory/claims.json` passed independently (14 claims).
+- Fresh clone (`053b5a12893c27c8793b3abd7c0d26c12739840c`): `npm test` (21), `npm run lint`, `npm run build`, and `npm run test:e2e` (21) all passed.
+- Build output: `dist/` exists; JavaScript is 23.85 kB raw / 8.99 kB gzip.
+- Playwright Axe integration found zero violations on Demo, Privacy, Terms, and 404. The suite also checks keyboard operation, visible route focus/announcements, 390px overflow, 44px targets, reduced motion, offline reload, and no console errors.
+- Local cold demo: [desktop screenshot](evidence/polish-2-local/screenshot-desktop.png), [mobile screenshot](evidence/polish-2-local/screenshot-mobile.png), and [basic route check](evidence/polish-2-local/verify.json). The route check reports `Demo — Archive Audit`, `lang=en`, one h1, main landmark, image alt text, and no console errors.
 
-## Final evidence pending deployment
+## Deployment and final live check
 
-The final clean-clone claim run, static accessibility checks, commit identifier, push, deployment, and cold live recheck are appended after the repair is committed and deployed.
+Pending the final push/deployment step for commit `053b5a12893c27c8793b3abd7c0d26c12739840c`; append the deployed URL evidence after the static work-order deployment completes.
