@@ -2,7 +2,9 @@
 
 ## Status
 
-Release blockers from verifier report commit `3b489481be9cf543da19b9aff135c6c605c9aeab` are repaired. The repaired static PWA keeps the researched artifact class and `dist/` deployment root.
+**PASS — independently verified 2026-08-29 UTC for candidate `8df79782b25505f318d26b1b5f5f3374722fbf9d` at https://message-archive-audit.sociobot.in.**
+
+Independent verification is recorded in `.factory/verification-2.md`. It reran every claim command from a clean checkout, the local suite/build, live deployment parity, live privacy/offline/update/accessibility/responsive checks, and the 20-message attachment-reference precision case. No Critical, Major, or Minor defects remain. The repaired static PWA keeps the researched artifact class and `dist/` deployment root.
 
 ## Repairs
 
