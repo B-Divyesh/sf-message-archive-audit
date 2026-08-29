@@ -86,7 +86,23 @@ Serve `dist/`, then open `http://127.0.0.1:4173/demo` for the isolated verifier 
 
 ## Deployment and live identity
 
-The final repair commit, deployment result, and byte-for-byte live identity evidence are recorded here after upload.
+The product repair was pushed to `origin/main` as commit `5fca23b` and deployed with the work order's static deployment helper.
+
+```text
+Production URL       https://message-archive-audit.sociobot.in
+Azure region         centralus
+Deployment ID        d46bfa3d-f0fd-44cc-8b52-99bd7881cc95
+Custom domain        Ready; HTTPS 200
+index.html SHA-256   0fb500be3f8328193702124bc800e83a8d18080d735e7eaddf090b2d69f7f574
+application JS       5e5154880bb5a45fbc51141120811b4bac9a8ff6cc1feec7184168357b0407f3
+sw.js SHA-256        5054d478bb3aaef507225a9e139a953ab2330770b713fcf99569d8fea4241fe2
+```
+
+Each live hash matches the local `dist/` artifact byte for byte. Live HTML and `sw.js` return `Cache-Control: no-cache`; hashed JavaScript returns `public, max-age=31536000, immutable`. CSP, `frame-ancestors 'none'`, Permissions Policy, X-Frame-Options, Referrer Policy, HSTS, and `nosniff` are present. An arbitrary path returns the designed page with HTTP 404.
+
+`verify-url.sh` against production passed in 1089ms with no console errors, one H1, `lang=en`, a main landmark, alt text, and labeled buttons. A separate fresh 390px reduced-motion browser uploaded the verifier's exact zero-byte EML and observed `1 messages`, `1 attachments named`, `1 attachments hashed`, `0 references missing`, `empty.bin`, `0 bytes`, and the correct SHA-256. It then reloaded that saved report offline under service-worker control. The live run had no horizontal overflow, third-party requests, console errors, or serious/critical axe findings.
+
+Live evidence is in `.factory/evidence/repair-live/`.
 
 This product has no backend, authentication, payment, AI request, or product API. Package-consumer, 429/Retry-After, Entra identity, paid-unlock, and live model checks do not apply.
 
