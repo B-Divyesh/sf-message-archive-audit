@@ -1,54 +1,21 @@
-# Polish 1 handoff — Archive Audit
+# Verification handoff — Archive Audit
 
 ## Status
 
-**PASS.** Repair commit: `ebac50c6782759a5132c05160489e3a10cb172f4` (`fix: complete review-one polish`). It was pushed to `origin/main` and deployed as Azure Static Web Apps deployment `42abc230-4c5c-47bd-877e-9acf85e7dae5`.
+**FAIL — do not release candidate `7b8fee9fcafcae7f879c7b238d3f19dfb0f98e86`.**
 
-## What changed
+Independent verification on 2026-08-29 found a core attachment-inventory defect in the live deployment. A valid named base64 MIME attachment whose decoded content is zero bytes is silently omitted. The app certifies the export as complete with zero named attachments, zero hashes, and zero missing references. That is incompatible with an attachment-preserving archive audit.
 
-- The first-screen sample action now opens the isolated `/?demo=1` sandbox. The completed audit is positioned after route load, and its sticky demo banner keeps reset and exit controls visible.
-- The static host rewrites only the known `/demo` route. Unknown paths now receive the designed `404.html` with HTTP 404.
-- Route navigation focuses and announces the destination heading. Legal and 404 documents use the same header/footer content, theme control, metadata, and focus behavior as the app shell.
-- Copy consistently uses **email export**, **local audit summary**, and **downloaded receipt**. README and landing technical labels were rewritten in plain first-use terms.
-- Added the `demo-no-setup` claim and browser assertion. The landing page no longer creates an empty real IndexedDB database before a real audit.
+The live JS exactly matches this candidate: `assets/index-BuS4VpdP.js` has SHA-256 `7f7bc6a19b6524ee2ec23d3fd2476465fdcc0477605f63ca49c4f2f5eb175726` both live and after the local production build.
 
-## Verification
+## What passed
 
-Fresh clone: `/tmp/archive-audit-clean.ygj3CB` after `git clone /work/repo`, then `npm ci`.
+- `npm ci`, `npm test` (13 tests), `npm run typecheck`, `npm run lint`, and `npm run build` all passed. The build created `dist/`; JS is 7.77 KB gzip and CSS is 2.93 KB gzip.
+- Every declared claim command passed: `mime-audit`, `local-only`, `offline-reload`, `receipt-exports`, `report-persistence`, `free-use`, and `demo-no-setup`.
+- The first screen, one-click isolated demo, live offline reload, service-worker update flow, outgoing-request privacy boundary, receipts, persistence, desktop/mobile/keyboard/reduced-motion behavior, axe, headers, routes, caching, and link crawl passed.
 
-All individual claim commands passed:
+## Required next step
 
-```text
-npm run test:e2e -- --grep @claim:mime-audit
-npm run test:e2e -- --grep @claim:local-only
-npm run test:e2e -- --grep @claim:offline-reload
-npm run test:e2e -- --grep @claim:receipt-exports
-npm run test:e2e -- --grep @claim:report-persistence
-npm run test:e2e -- --grep @claim:free-use
-npm run test:e2e -- --grep @claim:demo-no-setup
-```
+Repair `src/parser.ts` so every named attachment MIME part becomes an attachment record. Empty readable bodies must hash as the SHA-256 of zero bytes; only a real unresolved reference may be shown as missing. Add a direct claimed browser regression fixture for this case, make a new candidate commit, and rerun verification.
 
-The same clean clone also passed `npm test` (13 tests), `npm run lint`, `npm run build` (creates `dist/`; initial JS 7.77 KB gzip and CSS 2.93 KB gzip), and `npm run test:e2e` (14 tests). The browser suite includes AxeBuilder checks with no serious or critical violations on demo, Privacy, Terms, and 404.
-
-Live verification passed on 2026-08-29:
-
-- `/opt/fleet/lib/verify-url.sh 'https://message-archive-audit.sociobot.in/?demo=1' .factory/evidence/live-demo` returned HTTP 200, 647 ms load, no console errors, `lang=en`, one h1, main landmark, and no missing image alt or unlabeled button.
-- `https://message-archive-audit.sociobot.in/missing-review-link` returned **404** and the designed “Page not found” document.
-- A cold Playwright check verified live demo viewport visibility, Home → Privacy → Back heading focus and announcements, and legal/404 metadata.
-- Screenshots: `.factory/evidence/live-demo/viewport-390.png` and `.factory/evidence/live-demo/viewport-1440.png`.
-
-## Run locally
-
-```sh
-npm ci
-npm test
-npm run lint
-npm run build
-npm run test:e2e
-```
-
-Use `/?demo=1` for the isolated sample. `/demo` remains a direct route. Deploy `dist/` with `public/staticwebapp.config.json` at the deployment root.
-
-## Known gaps
-
-None.
+See `.factory/verification-3.md` for exact fixture, evidence, complete command results, and defect severity.
