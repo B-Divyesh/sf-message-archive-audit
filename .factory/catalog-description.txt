@@ -1,1 +1,1 @@
-Check email exports before account or device access ends.
+Check email exports and download a receipt before access ends.

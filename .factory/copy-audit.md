@@ -19,6 +19,12 @@ Audited 2026-08-29. Counts treat each whitespace-delimited token, including hyph
 
 The first screen states the job, names the person facing lost access, and gives one prominent sample action. It reads aloud in one breath.
 
+## Catalog description
+
+| Copy | Words | Result |
+| --- | ---: | --- |
+| Check email exports and download a receipt before access ends. | 10 | Verb-first; 120-character limit passes; receipt download is covered by `receipt-exports`. |
+
 ## Remaining landing copy
 
 | Copy | Words |

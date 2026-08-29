@@ -23,7 +23,7 @@
   {
     "id": "receipt-exports",
     "claim": "Exports complete HTML, CSV, and JSON receipts, including messages without attachments and every selected folder file.",
-    "where": "how it works, report actions, README",
+    "where": "catalog description, how it works, report actions, README",
     "test": "npm run test:e2e -- --grep @claim:receipt-exports",
     "sandbox": "fresh browser context at /demo plus controlled folder files; download all three receipts and inspect message and folder inventories"
   },
