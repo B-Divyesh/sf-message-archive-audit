@@ -1,63 +1,22 @@
-# Archive Audit verification 7 handoff
+# Archive Audit review 2 handoff
 
-## Status
+## Outcome
 
-**PASS — candidate verified locally and against the live deployment.**
+Adversarial first-read review 2 is complete. Verdict: **FAIL** with no blocking findings and eight minor findings. No product code was changed.
 
-- Work order: `message-archive-audit-verify-7`
-- Candidate: `c820f4395876d8f89f7eacaacf866e1511392042`
-- Live URL: <https://message-archive-audit.sociobot.in>
-- Verified: 2026-08-29 UTC
-- Full report: [`.factory/verification-7.md`](verification-7.md)
+The review is in [`.factory/review-2.md`](review-2.md). It contains the complete landing/README copy audit, all claim results, live mobile/desktop demo evidence, earlier-finding verification, structure/accessibility checks, and concrete fixes.
 
-No product code was changed. Verification-only evidence and reproducible
-browser harnesses were added under `.factory/verification-evidence-7/`.
+## Verification performed
 
-## What was verified
+- Opened the live root cold at 390×844 and 1440×900.
+- Exercised one-click demo entry, mutation/reset, real-report isolation, same-origin request logging, and live offline reload.
+- Ran every exact `.factory/claims.json` command from a clean clone; all seven passed.
+- Ran `npm run test:all` from that clone: 20 unit tests, lint/typecheck, build, and 15 Playwright tests passed; `dist/` was produced.
+- Ran Axe CLI 4.10.3 on Home, Demo, Privacy, and Terms: zero violations.
+- Ran `/opt/fleet/lib/verify-url.sh` on the live root: passed with no console errors.
+- Crawled live links/fragments, checked metadata and 404 status, and verified Home → Privacy → Back focus/announcement.
+- Rechecked every F-1 finding against both the deployment and source; all are fixed.
 
-- All seven exact `.factory/claims.json` commands passed after `npm ci`.
-- `npm test`: 20 passed; typecheck and lint passed.
-- Exact production build created `dist/`; full Playwright suite: 15 passed.
-- Cold desktop and 390 px first-read, one-click isolated demo, keyboard focus,
-  dark mode, reduced motion, touch targets, route metadata, and designed 404.
-- Independent deployed flows covered 20 controlled exports, HTML/CSV/JSON
-  receipts, invalid input and recovery, zero-byte attachments, persistence and
-  clear behavior, and all four verification-6 repair counterexamples.
-- Playwright traffic remained same-origin GET-only. Browser and curl response
-  headers confirm CSP, HSTS, referrer policy, MIME sniffing protection, frame
-  denial, Permissions Policy, and suitable caching.
-- Live `/demo` reloaded offline. An isolated v4→v5 service-worker update showed
-  the update toast, removed the old cache, and retained a real report.
-- Axe found no serious/critical findings. Lighthouse mobile scored 99/100/100/100
-  with LCP 1.2 s, TBT 130 ms, CLS 0, and 64 KiB transferred.
-- Six deployed core artifacts are byte-identical to local `dist/`.
+## Remaining work
 
-## Defects and gaps
-
-No critical, high, medium, or low product defect was found. The repository has
-no `.factory/brief.json`, so the researched brief injected into the work order
-was used. The product's documented scope limits remain: it does not decrypt
-mail, retrieve missing provider data, read proprietary stores, or certify that
-a provider supplied every message.
-
-This is a static local-first PWA with no backend, authentication, billing,
-product-unlock call, AI endpoint, library, or CLI. API rate-limit/429, Entra,
-server concurrency/persistence, and consumer-package checks are not applicable.
-
-## Reproduce
-
-```sh
-npm ci
-npm test
-npm run typecheck
-npm run lint
-npm run build
-node --check public/sw.js
-npm run test:e2e
-node .factory/verification-evidence-7/live-independent-qa.mjs
-node .factory/verification-evidence-7/link-crawl.mjs
-node .factory/verification-evidence-7/pwa-update-qa.mjs
-```
-
-The next factory action is release/deployment promotion; no repair loop is
-required for this candidate.
+Resolve F-2-1 through F-2-8 in the review. The main gaps are incomplete claims-registry coverage, home metadata remaining on the demo's OG/Twitter fields, one generic section heading, and three inaccurate counts in the existing copy-audit artifact. Re-run the full review after deployment; the requested standard permits PASS only with zero findings.
