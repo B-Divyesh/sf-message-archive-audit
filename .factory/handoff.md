@@ -2,7 +2,7 @@
 
 ## Status
 
-**Ready to deploy.** This repair starts from the available remote base
+**Deployed and verified.** This repair starts from the available remote base
 `3092196290158dcfb129b302c818d627376272d2`. The work order's requested object
 `3e56ef195918c350468a6e7291f2812318fd600b` is not present in the supplied
 clone or `origin`, as recorded by the independent verifier. It cannot be
@@ -47,7 +47,15 @@ npm run test:e2e
 
 ## Deployment
 
-Push this repair to `main`; the static deployment is configured to publish `dist/` with `staticwebapp.config.json` at its root. After publish, verify the live app identity and repeat the keyboard, 390px, privacy, service-worker/offline, and route checks.
+Pushed to `origin/main` at `8f615ad27e60e253016c9d248deec46a7170948b`, then deployed the verified `dist/` artifact with the factory static deployment configuration. Azure Static Web Apps deployment `100f96f8-d6d9-494d-9474-ffbee0cc38c9` succeeded and the custom domain returned HTTPS 200.
+
+Live identity is exact for the application artifact:
+
+- `index.html`: `ccf16a1fb89ca6eb6f189235dcfbeb616f5d39b630b5c4817fe9632ce6231f59`
+- `assets/index-Bgb12Ss4.js`: `a9e74f45da2c4a0f657665b5c3d70ec113eb7d744134c117bf0d82170e4f3cd7`
+- `sw.js`: `5054d478bb3aaef507225a9e139a953ab2330770b713fcf99569d8fea4241fe2`
+
+The live browser verification passed: no non-404 console/page errors; Axe found zero serious or critical violations on demo, Privacy, Terms, and an unknown-route 404; all three repaired skip links focus `main`; the 404 recovery link is 221.9×44px at 390px; and a controlled demo reloads offline after service-worker control. The intentional HTTP 404 document produces the browser's expected failed-resource network message and was excluded from the console-error check.
 
 ## Known gaps
 
