@@ -1,0 +1,44 @@
+[
+  {
+    "id": "mime-audit",
+    "claim": "Counts valid EML and MBOX messages and hashes readable base64 and 7-bit MIME attachments.",
+    "where": "landing page, demo, README",
+    "test": "npm run test:e2e -- --grep @claim:mime-audit",
+    "sandbox": "fresh browser context at /demo; bundled EML and MBOX samples; assert message, attachment, and hash counts"
+  },
+  {
+    "id": "local-only",
+    "claim": "Message and attachment bytes stay on this device, and demo data never enters real report storage.",
+    "where": "landing facts, privacy page, README",
+    "test": "npm run test:e2e -- --grep @claim:local-only",
+    "sandbox": "fresh browser context at /demo; record all requests and inspect IndexedDB database names"
+  },
+  {
+    "id": "offline-reload",
+    "claim": "Works offline after the first visit.",
+    "where": "landing facts, README",
+    "test": "npm run test:e2e -- --grep @claim:offline-reload",
+    "sandbox": "fresh browser context at /demo; wait for service-worker control, disable network, reload, and assert the completed audit"
+  },
+  {
+    "id": "receipt-exports",
+    "claim": "Exports complete HTML, CSV, and JSON receipts, including messages without attachments.",
+    "where": "how it works, report actions, README",
+    "test": "npm run test:e2e -- --grep @claim:receipt-exports",
+    "sandbox": "fresh browser context at /demo; download all three receipts and inspect their contents"
+  },
+  {
+    "id": "report-persistence",
+    "claim": "A real audit report survives reload without storing message bodies or attachment bytes.",
+    "where": "privacy section, privacy page, README",
+    "test": "npm run test:e2e -- --grep @claim:report-persistence",
+    "sandbox": "fresh browser context; upload controlled EML, inspect IndexedDB, reload, and assert restored metadata"
+  },
+  {
+    "id": "free-use",
+    "claim": "The complete audit and all receipt formats are free and require no account.",
+    "where": "landing facts, README",
+    "test": "npm run test:e2e -- --grep @claim:free-use",
+    "sandbox": "fresh browser context; enter /demo without setup and assert all export actions are available"
+  }
+]

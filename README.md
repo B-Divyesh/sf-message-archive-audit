@@ -1,31 +1,33 @@
 # Archive Audit
 
-Archive Audit is an offline-first inspector for people preserving message exports before an account or device disappears. It opens standard MIME `.eml` and text `.mbox` files in the browser, inventories messages, hashes readable embedded attachments, identifies named attachment references that are missing from a supplied folder, and creates portable HTML, CSV and JSON receipts.
+Archive Audit checks email exports before account or device access ends. It is for people who need a clear record of saved messages and attachments.
 
-Nothing in the archive is uploaded. Archive reports may be retained in browser IndexedDB until cleared; source message bytes are not retained by the app.
+It reads standard MIME EML and text MBOX files in the browser. It counts messages, hashes readable base64 and 7-bit attachments with SHA-256, checks named files against an optional attachment folder, and exports HTML, CSV, and JSON receipts. Messages without attachments remain in every receipt.
 
-## Use it
+Message and attachment bytes stay on the device. A real audit stores only report metadata in IndexedDB, and that report survives reload until cleared. The complete audit and every receipt format are free and need no account. The installed app works offline after the first visit.
 
-1. Export mail from the provider using its normal export tool.
-2. Select one or more `.eml` / `.mbox` files. Optionally select the exported attachment folder.
-3. Review the ledger and any missing references.
-4. Save the HTML receipt (or CSV/JSON) alongside the original export.
+## Try the isolated demo
 
-The parser supports standard MIME email and text MBOX. It does not decrypt, recover, export, access providers, or inspect proprietary message databases.
+Open `/demo` or choose “Try it with sample data.” The sample contains two EML files and a two-message MBOX. Demo state stays in memory and never reads or writes the real report database.
 
 ## Run and verify
 
 ```sh
-npm install
-npm run dev
+npm ci
 npm test
+npm run lint
 npm run build
+npm run test:e2e
 ```
 
-`npm run build` writes the static deploy artifact to `dist/`, with `index.html` at its root. For an additional browser smoke test, run `npm run test:e2e` after `npm run build`.
+`npm run build` writes the static deployment to `dist/`. The browser suite uses Playwright 1.58.2 and validates every claim in `.factory/claims.json`.
 
-The optional one-time upgrade uses Sociobot’s hosted license checkout; it never handles payment card data in the app. See [Privacy](public/privacy/index.html) and [Terms](public/terms/index.html).
+## Limits
 
-## Deployment
+Archive Audit does not decrypt mail, recover missing messages, contact providers, or read proprietary message databases. A receipt inventories selected files; it does not certify that a provider supplied every message.
 
-Deploy the contents of `dist/` as a static site. The included service worker pre-caches the app shell for offline use. HTTPS is required for service worker registration in production.
+See [Privacy](public/privacy/index.html) and [Terms](public/terms/index.html). The project is available under the [MIT License](LICENSE).
+
+## Deploy
+
+Deploy `dist/` as a static site. Keep `staticwebapp.config.json` at the deployment root so routes, security headers, and cache policies apply. HTTPS is required for service workers.

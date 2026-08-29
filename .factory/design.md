@@ -33,4 +33,6 @@ One original hero illustration accompanies the empty state: a top-down field not
 
 > Use case: illustration-story. Asset type: product empty-state illustration. Primary request: a top-down hand-painted editorial illustration of a well-used archival field notebook beside a sealed envelope, a paperclip, small attachment photographs, and a simple green verification tick. Scene/backdrop: warm recycled cream paper desk. Style/medium: tactile gouache and graphite pencil, subtle paper fibers, contemporary editorial. Composition: square, objects centered with generous quiet edges. Lighting/mood: soft window light, calm and trustworthy. Color palette: parchment cream, forest green, graphite, restrained ochre. Constraints: no text, no letters, no logos, no watermark, no brands, no people, no interface screenshots.
 
-The asset is original generated artwork; its source prompt is also retained beside the source image in `assets/src/hero-notebook.json`. Footer copy discloses this.
+The asset is original generated artwork; its source prompt is also retained beside the source image in `assets/src/hero-notebook.png.json`. Footer copy discloses this.
+
+The 1200×630 social card is a local crop-and-frame composition of that same original artwork. It adds parchment space and notebook-green edge bands without introducing another visual source.
