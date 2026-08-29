@@ -1,0 +1,838 @@
+{
+  "firstRead": {
+    "h1": "Check an email export before access ends",
+    "audience": "For people leaving an account or device who need a clear record of saved messages and attachments.",
+    "primaryAction": "Try it with sample data",
+    "actionOutcome": "The sample opens a complete audit. No setup is needed.",
+    "facts": [
+      "Files stay on this device.",
+      "Works offline after the first visit.",
+      "Free. No account."
+    ]
+  },
+  "demo": {
+    "url": "https://message-archive-audit.sociobot.in/?demo=1",
+    "banner": "Demo — sample data, nothing is saved",
+    "metrics": "4\nmessages\n2\nattachments named\n2\nattachments hashed\n0\nreferences missing",
+    "resultsInViewport": true,
+    "databases": []
+  },
+  "invalidRecovery": {
+    "emptyError": "Audit not completed\n\nThis export could not be audited. The message file is empty.",
+    "nonsenseError": "Audit not completed\n\nThis export could not be audited. The file has no complete email header block.",
+    "recovered": true
+  },
+  "twentyExports": {
+    "messageCount": 20,
+    "folderFileCount": 10,
+    "found": 10,
+    "missing": 10,
+    "ambiguous": 0,
+    "uniqueFolderHashes": 10,
+    "htmlHasFirstAndLastMessage": true,
+    "htmlHasFolderInventory": true,
+    "csvRowsIncludingHeader": 31,
+    "csvHasMissingAndFound": true
+  },
+  "rfcAndUtf8": {
+    "subjectPresent": true,
+    "senderPresent": true,
+    "attachmentPresent": true,
+    "hashPresent": true
+  },
+  "duplicateAndOrphan": {
+    "referenceStatuses": [
+      "ambiguous",
+      "missing"
+    ],
+    "folderFiles": [
+      {
+        "path": "attachments/invoice.pdf",
+        "status": "ambiguous",
+        "hash": "d4140ea3c490e5350639d073418f32ee179ac8632980a2c0718a229170ba9753"
+      },
+      {
+        "path": "attachments/photos/orphan-photo.jpg",
+        "status": "unmatched",
+        "hash": "3feb142d9ec8b68c7b0f8248f00b356f34fc86eaa20f103b71f6a4a1bada75da"
+      }
+    ],
+    "issueText": [
+      "1 attachment reference could not be matched to a separate folder file.",
+      "1 selected folder file has duplicate-name matches and cannot be linked uniquely.",
+      "1 selected folder file was not referenced by a named message attachment."
+    ],
+    "htmlRetainsOrphanAndAmbiguity": true,
+    "csvRetainsOrphanAndAmbiguity": true
+  },
+  "zeroByte": {
+    "sizeShown": true,
+    "emptyHashShown": true
+  },
+  "persistence": {
+    "storedBytes": 280,
+    "containsBody": false,
+    "survivedReload": true,
+    "cancelPreserved": true,
+    "clearRemoved": true
+  },
+  "keyboard": {
+    "skipFocused": true,
+    "mainFocused": true,
+    "focusStyle": {
+      "outline": "rgb(138, 83, 20) solid 3px",
+      "outlineWidth": "3px",
+      "outlineStyle": "solid",
+      "outlineColor": "rgb(138, 83, 20)"
+    }
+  },
+  "accessibility": {
+    "desktopAxe": [
+      {
+        "route": "/",
+        "seriousOrCritical": []
+      },
+      {
+        "route": "/?demo=1",
+        "seriousOrCritical": []
+      }
+    ],
+    "axeResults": [
+      {
+        "route": "/?demo=1",
+        "status": 200,
+        "seriousOrCritical": []
+      },
+      {
+        "route": "/privacy/",
+        "status": 200,
+        "seriousOrCritical": []
+      },
+      {
+        "route": "/terms/",
+        "status": 200,
+        "seriousOrCritical": []
+      },
+      {
+        "route": "/not-a-real-route",
+        "status": 404,
+        "seriousOrCritical": []
+      }
+    ],
+    "mobileFirstAction": {
+      "top": 307.703125,
+      "bottom": 352.5,
+      "visibleInFirstViewport": true
+    },
+    "mobileLayout": {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "documentWidth": 390,
+      "overflow": false,
+      "smallTargets": [],
+      "maxAnimationMs": 0.01
+    }
+  },
+  "offline": {
+    "status": 200,
+    "demoRestored": true,
+    "controlled": true,
+    "cacheNames": [
+      "archive-audit-v5"
+    ]
+  },
+  "traffic": {
+    "count": 48,
+    "origins": [
+      "https://message-archive-audit.sociobot.in"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "requests": [
+      {
+        "url": "https://message-archive-audit.sociobot.in/",
+        "method": "GET",
+        "type": "document"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-C9Q3ajRm.js",
+        "method": "GET",
+        "type": "script"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-B_u3xm-w.css",
+        "method": "GET",
+        "type": "stylesheet"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/hero-notebook.webp",
+        "method": "GET",
+        "type": "image"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/sw.js",
+        "method": "GET",
+        "type": "script"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/index.html",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/demo",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/privacy/",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/terms/",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/offline.html",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/manifest.webmanifest",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/hero-notebook.webp",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/social-card.webp",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/legal.css",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/route-focus.js",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/theme.js",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/icons/icon.svg",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/icons/icon-192.png",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/icons/icon-512.png",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/index.html",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-C9Q3ajRm.js",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-B_u3xm-w.css",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/?demo=1",
+        "method": "GET",
+        "type": "document"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/?demo=1",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-C9Q3ajRm.js",
+        "method": "GET",
+        "type": "script"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-B_u3xm-w.css",
+        "method": "GET",
+        "type": "stylesheet"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/hero-notebook.webp",
+        "method": "GET",
+        "type": "image"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/",
+        "method": "GET",
+        "type": "document"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-C9Q3ajRm.js",
+        "method": "GET",
+        "type": "script"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-B_u3xm-w.css",
+        "method": "GET",
+        "type": "stylesheet"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/hero-notebook.webp",
+        "method": "GET",
+        "type": "image"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/",
+        "method": "GET",
+        "type": "document"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-C9Q3ajRm.js",
+        "method": "GET",
+        "type": "script"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-B_u3xm-w.css",
+        "method": "GET",
+        "type": "stylesheet"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/hero-notebook.webp",
+        "method": "GET",
+        "type": "image"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/",
+        "method": "GET",
+        "type": "document"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-C9Q3ajRm.js",
+        "method": "GET",
+        "type": "script"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-B_u3xm-w.css",
+        "method": "GET",
+        "type": "stylesheet"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/hero-notebook.webp",
+        "method": "GET",
+        "type": "image"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/",
+        "method": "GET",
+        "type": "document"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/",
+        "method": "GET",
+        "type": "fetch"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-C9Q3ajRm.js",
+        "method": "GET",
+        "type": "script"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-B_u3xm-w.css",
+        "method": "GET",
+        "type": "stylesheet"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/hero-notebook.webp",
+        "method": "GET",
+        "type": "image"
+      }
+    ],
+    "responses": [
+      {
+        "url": "https://message-archive-audit.sociobot.in/",
+        "status": 200,
+        "cacheControl": "no-cache",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": "max-age=10886400; includeSubDomains; preload",
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-B_u3xm-w.css",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": "max-age=10886400; includeSubDomains; preload",
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-C9Q3ajRm.js",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": "max-age=10886400; includeSubDomains; preload",
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/sw.js",
+        "status": 200,
+        "cacheControl": "no-cache",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": "max-age=10886400; includeSubDomains; preload",
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/",
+        "status": 200,
+        "cacheControl": null,
+        "contentSecurityPolicy": null,
+        "referrerPolicy": null,
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": null
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/demo",
+        "status": 200,
+        "cacheControl": "public, must-revalidate, max-age=30",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": "max-age=10886400; includeSubDomains; preload",
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/index.html",
+        "status": 200,
+        "cacheControl": "no-cache",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": "max-age=10886400; includeSubDomains; preload",
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/hero-notebook.webp",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": "max-age=10886400; includeSubDomains; preload",
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/privacy/",
+        "status": 200,
+        "cacheControl": "public, must-revalidate, max-age=30",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": "max-age=10886400; includeSubDomains; preload",
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/terms/",
+        "status": 200,
+        "cacheControl": "public, must-revalidate, max-age=30",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": "max-age=10886400; includeSubDomains; preload",
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/offline.html",
+        "status": 200,
+        "cacheControl": "public, must-revalidate, max-age=30",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": "max-age=10886400; includeSubDomains; preload",
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/manifest.webmanifest",
+        "status": 200,
+        "cacheControl": "public, must-revalidate, max-age=30",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": "max-age=10886400; includeSubDomains; preload",
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/hero-notebook.webp",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/social-card.webp",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": "max-age=10886400; includeSubDomains; preload",
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/legal.css",
+        "status": 200,
+        "cacheControl": "public, must-revalidate, max-age=30",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": "max-age=10886400; includeSubDomains; preload",
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/route-focus.js",
+        "status": 200,
+        "cacheControl": "public, must-revalidate, max-age=30",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": "max-age=10886400; includeSubDomains; preload",
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/icons/icon.svg",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": "max-age=10886400; includeSubDomains; preload",
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/theme.js",
+        "status": 200,
+        "cacheControl": "public, must-revalidate, max-age=30",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": "max-age=10886400; includeSubDomains; preload",
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/icons/icon-192.png",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": "max-age=10886400; includeSubDomains; preload",
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/icons/icon-512.png",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": "max-age=10886400; includeSubDomains; preload",
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/index.html",
+        "status": 200,
+        "cacheControl": "no-cache",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": "max-age=10886400; includeSubDomains; preload",
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-C9Q3ajRm.js",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-B_u3xm-w.css",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/?demo=1",
+        "status": 200,
+        "cacheControl": "no-cache",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": "max-age=10886400; includeSubDomains; preload",
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/?demo=1",
+        "status": 200,
+        "cacheControl": "no-cache",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": "max-age=10886400; includeSubDomains; preload",
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-B_u3xm-w.css",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-C9Q3ajRm.js",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/hero-notebook.webp",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/",
+        "status": 200,
+        "cacheControl": null,
+        "contentSecurityPolicy": null,
+        "referrerPolicy": null,
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": null
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/",
+        "status": 200,
+        "cacheControl": "no-cache",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-C9Q3ajRm.js",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-B_u3xm-w.css",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/hero-notebook.webp",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/",
+        "status": 200,
+        "cacheControl": null,
+        "contentSecurityPolicy": null,
+        "referrerPolicy": null,
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": null
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/",
+        "status": 200,
+        "cacheControl": "no-cache",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-C9Q3ajRm.js",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-B_u3xm-w.css",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/hero-notebook.webp",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/",
+        "status": 200,
+        "cacheControl": null,
+        "contentSecurityPolicy": null,
+        "referrerPolicy": null,
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": null
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/",
+        "status": 200,
+        "cacheControl": "no-cache",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-C9Q3ajRm.js",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-B_u3xm-w.css",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/hero-notebook.webp",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/",
+        "status": 200,
+        "cacheControl": null,
+        "contentSecurityPolicy": null,
+        "referrerPolicy": null,
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": null
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/",
+        "status": 200,
+        "cacheControl": "no-cache",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-C9Q3ajRm.js",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/assets/index-B_u3xm-w.css",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      },
+      {
+        "url": "https://message-archive-audit.sociobot.in/hero-notebook.webp",
+        "status": 200,
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "strictTransportSecurity": null,
+        "xContentTypeOptions": "nosniff"
+      }
+    ]
+  },
+  "errors": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "expected404Console": [
+      "Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  }
+}

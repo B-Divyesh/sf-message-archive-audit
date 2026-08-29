@@ -1,0 +1,13 @@
+{
+  "beforeCaches": [
+    "archive-audit-v5"
+  ],
+  "updateToastShown": true,
+  "afterCaches": [
+    "archive-audit-v6"
+  ],
+  "reportRestored": true,
+  "oldCacheRemoved": true,
+  "newCacheActive": true,
+  "consoleOrPageErrors": []
+}

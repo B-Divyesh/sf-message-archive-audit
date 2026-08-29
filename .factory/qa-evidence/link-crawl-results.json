@@ -1,0 +1,63 @@
+[
+  {
+    "url": "https://message-archive-audit.sociobot.in/",
+    "status": 200,
+    "texts": [
+      "✓ Archive Audit",
+      "How it works",
+      "Start for real",
+      "✓Archive Audit",
+      "Return to Archive Audit"
+    ],
+    "sources": [
+      "/",
+      "/?demo=1",
+      "/privacy/",
+      "/terms/",
+      "/not-a-real-route"
+    ]
+  },
+  {
+    "url": "https://message-archive-audit.sociobot.in/?demo=1",
+    "status": 200,
+    "texts": [
+      "Demo",
+      "Try it with sample data"
+    ],
+    "sources": [
+      "/",
+      "/?demo=1",
+      "/privacy/",
+      "/terms/",
+      "/not-a-real-route"
+    ]
+  },
+  {
+    "url": "https://message-archive-audit.sociobot.in/privacy/",
+    "status": 200,
+    "texts": [
+      "Privacy"
+    ],
+    "sources": [
+      "/",
+      "/?demo=1",
+      "/privacy/",
+      "/terms/",
+      "/not-a-real-route"
+    ]
+  },
+  {
+    "url": "https://message-archive-audit.sociobot.in/terms/",
+    "status": 200,
+    "texts": [
+      "Terms"
+    ],
+    "sources": [
+      "/",
+      "/?demo=1",
+      "/privacy/",
+      "/terms/",
+      "/not-a-real-route"
+    ]
+  }
+]
