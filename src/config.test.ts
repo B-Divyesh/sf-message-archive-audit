@@ -14,6 +14,7 @@ describe('static response policy', () => {
 
   it('uses immutable hashed-asset caching and a real 404 response override', () => {
     expect(config.routes.find((route: { route: string }) => route.route === '/assets/*').headers['Cache-Control']).toContain('immutable')
+    expect(config.routes.find((route: { route: string }) => route.route === '/404').statusCode).toBe(404)
     expect(config.responseOverrides['404'].rewrite).toBe('/404.html')
     expect(config.navigationFallback.exclude).toContain('/404')
   })
