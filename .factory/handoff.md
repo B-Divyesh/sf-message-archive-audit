@@ -1,34 +1,28 @@
-# Archive Audit polish 2 handoff
+# Archive Audit verifier handoff — PASS
 
 ## Outcome
 
-Polish round 2 closes F-2-1 through F-2-8 and rechecks every F-1 finding. The product remains a local-first static PWA with its handwritten-notebook visual system. No paid, tracking, provider, or AI integration was added.
+**PASS** for candidate `59726b8070037dc2c56fad577fe3e67bad7d2827` at <https://message-archive-audit.sociobot.in> (verified 2026-08-29). No defects were found. The live static PWA matches the candidate build and works end-to-end as a local audit for selected EML/MBOX exports and attachment folders.
 
-## Changes
+## Verification completed
 
-- Added six public claims and six isolated tagged browser tests for missing files, folder inventory, no telemetry, demo reset, clearing a local report, and scope limits.
-- Made `/demo` social metadata route-specific, including Open Graph and Twitter fields.
-- Made encrypted S/MIME-style mail fail clearly instead of being treated as readable mail.
-- Replaced the generic privacy heading, corrected the copy-audit counting convention and counts, and updated the catalog description.
+- Clean install: `npm ci`.
+- Every exact claim command in `.factory/claims.json`: 13/13 passed independently.
+- `npm test`: 21/21 passed; `npm run typecheck`, `npm run lint`, and exact `npm run build` passed; `dist/` produced.
+- `npm run test:e2e`: 21/21 passed.
+- Live SHA-256 comparison: all 19 candidate public artifacts matched the deployment.
+- Fresh live checks: one-click demo, normal audit, invalid EML and recovery, receipts, demo isolation/reset, local-report privacy, no external requests, offline reload, service-worker update state, desktop/390px, keyboard focus, reduced motion, headers/caching, and 404.
+- `verify-url.sh` and Playwright axe passed on root/demo; axe also passed Privacy, Terms, and 404 with no serious or critical findings.
+- Fresh cold-root Lighthouse: Performance 98, Accessibility 100, Best Practices 100, SEO 100; LCP 1,053 ms, CLS 0, TBT 165 ms.
 
-See [polish-2.md](polish-2.md) for the finding-by-finding mapping.
+## Privacy and scope
 
-## Exact verification
+The app has no application server, authentication, payment, tracking, provider, or AI calls, so API rate-limit and Entra checks do not apply. Recorded browser requests were exclusively same-origin static GETs. A test body marker was absent from the stored IndexedDB report metadata.
 
-- Fresh clone (`80e46b48db48e21ccfa445ce66d13cc842409374`): `npm ci`, then every exact command in `.factory/claims.json` passed independently (13 claims).
-- Fresh clone (`053b5a12893c27c8793b3abd7c0d26c12739840c`): `npm test` (21), `npm run lint`, `npm run build`, and `npm run test:e2e` (21) all passed.
-- Build output: `dist/` exists; JavaScript is 23.85 kB raw / 8.99 kB gzip.
-- Playwright Axe integration found zero violations on Demo, Privacy, Terms, and 404. The suite also checks keyboard operation, visible route focus/announcements, 390px overflow, 44px targets, reduced motion, offline reload, and no console errors.
-- Local cold demo: [desktop screenshot](evidence/polish-2-local/screenshot-desktop.png), [mobile screenshot](evidence/polish-2-local/screenshot-mobile.png), and [basic route check](evidence/polish-2-local/verify.json). The route check reports `Demo — Archive Audit`, `lang=en`, one h1, main landmark, image alt text, and no console errors.
+## Defects / gaps
 
-## Deployment and final live check
+None found (P0/P1/P2/P3: 0/0/0/0).
 
-- Pushed: `e059ae48f20ba3d929d90e0488a18d5552025b5b` on `main` (repair code is `80e46b4` and `053b5a1`).
-- Deployed through `/opt/fleet/lib/deploy-static.sh message-archive-audit /work/repo/dist`; Azure deployment `c11c57d6-8467-4d54-81c0-f3788d0dbed4` completed successfully.
-- Cold live demo: [desktop screenshot](evidence/polish-2-live/screenshot-desktop.png), [mobile screenshot](evidence/polish-2-live/screenshot-mobile.png), and [route check](evidence/polish-2-live/verify.json). It reports no console errors, title `Demo — Archive Audit`, `lang=en`, one h1, main landmark, and image alt text.
-- Fresh 390px live check confirmed the sticky demo banner, completed results in the viewport, metrics `4 / 2 / 2 / 0`, exact `/demo` canonical/OG/Twitter metadata, `File storage and audit limits`, and Privacy h1 focus with `Privacy — Archive Audit` announcement.
-- `GET https://message-archive-audit.sociobot.in/missing-polish-2` returned HTTP 404 and the designed `Page not found` page. Live Terms includes the encrypted-mail/provider boundary and build `repair-6`.
+## Full evidence
 
-## Known gaps
-
-None.
+See [verification-8.md](verification-8.md) for the complete claim list, exact evidence, live URL, and test results.
