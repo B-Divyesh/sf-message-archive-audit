@@ -1,0 +1,295 @@
+{
+  "checks": {
+    "cold first-read": {
+      "pass": true,
+      "detail": {
+        "h1": "Check an email export before access ends",
+        "lede": "For people leaving an account or device who need a clear record of saved messages and attachments.",
+        "action": "Try it with sample data",
+        "note": "The sample opens a complete audit. No setup is needed."
+      }
+    },
+    "demo action above fold": {
+      "pass": true,
+      "detail": {
+        "x": 204,
+        "y": 498.15625,
+        "width": 254.65625,
+        "height": 46.34375
+      }
+    },
+    "one-click demo complete": {
+      "pass": true,
+      "detail": "4\nmessages\n2\nattachments named\n2\nattachments hashed\n0\nreferences missing"
+    },
+    "demo reset and exit": {
+      "pass": true,
+      "detail": "Both controls visible"
+    },
+    "demo storage isolation": {
+      "pass": true,
+      "detail": []
+    },
+    "axe /demo": {
+      "pass": true,
+      "detail": []
+    },
+    "axe /privacy/": {
+      "pass": true,
+      "detail": []
+    },
+    "axe /terms/": {
+      "pass": true,
+      "detail": []
+    },
+    "axe /qa-unknown-route": {
+      "pass": true,
+      "detail": []
+    },
+    "empty input rejected": {
+      "pass": true,
+      "detail": "Audit not completed\n\nChoose at least one .eml or .mbox file, then audit again."
+    },
+    "invalid EML rejected": {
+      "pass": true,
+      "detail": "Audit not completed\n\nThis export could not be audited. The file has no complete email header block."
+    },
+    "20-export mismatch precision fixture": {
+      "pass": true,
+      "detail": "20\nmessages\n20\nattachments named\n10\nattachments hashed\n10\nreferences missing"
+    },
+    "HTML receipt completeness": {
+      "pass": true,
+      "detail": "5987 bytes"
+    },
+    "CSV receipt completeness": {
+      "pass": true,
+      "detail": "21 lines"
+    },
+    "JSON receipt completeness": {
+      "pass": true,
+      "detail": "20 messages; 10 missing"
+    },
+    "metadata-only persistence": {
+      "pass": true,
+      "detail": "6364 bytes, source bodies absent"
+    },
+    "report survives reload": {
+      "pass": true,
+      "detail": "20\nmessages\n20\nattachments named\n10\nattachments hashed\n10\nreferences missing"
+    },
+    "clear cancellation": {
+      "pass": true,
+      "detail": "Report remains after cancel"
+    },
+    "clear confirmation": {
+      "pass": true,
+      "detail": "Local audit summary cleared. Your source files were not stored or changed."
+    },
+    "RFC2231 continued filename attachment counted": {
+      "pass": false,
+      "detail": {
+        "continuationMetrics": "1\nmessages\n0\nattachments named\n0\nattachments hashed\n0\nreferences missing",
+        "continuationLedger": "Message ledger — 1 message\nMESSAGE\tATTACHMENT\tSTATUS\tSHA-256\n\nContinued filename\nArchive <archive@example.test> · Tue, 02 Jan 2024 10:00:00 +0000\n\t—\tNo attachment\t—"
+      }
+    },
+    "UTF-8 Q encoded headers preserved": {
+      "pass": false,
+      "detail": "Message ledger — 1 message\nMESSAGE\tATTACHMENT\tSTATUS\tSHA-256\n\nCafÃ© receipt\nJosÃ© Archive <jose@example.test> · Tue, 02 Jan 2024 10:00:00 +0000\n\t—\tNo attachment\t—"
+    },
+    "one file does not verify two references": {
+      "pass": false,
+      "detail": "2\nmessages\n2\nattachments named\n2\nattachments hashed\n0\nreferences missing"
+    },
+    "selected attachment folder files appear in receipt": {
+      "pass": false,
+      "detail": {
+        "metrics": "1\nmessages\n0\nattachments named\n0\nattachments hashed\n0\nreferences missing",
+        "receiptContainsFile": false
+      }
+    },
+    "zero-byte attachment hashed": {
+      "pass": true,
+      "detail": "Message ledger — 1 message\nMESSAGE\tATTACHMENT\tSTATUS\tSHA-256\n\nEmpty attachment\nZero <zero@example.test> · Tue, 02 Jan 2024 10:00:00 +0000\n\tempty.bin\n0 bytes\n\tEmbedded and hashed\te3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "outgoing requests same origin": {
+      "pass": true,
+      "detail": {
+        "origins": [
+          "https://message-archive-audit.sociobot.in"
+        ],
+        "count": 16
+      }
+    },
+    "no console/page errors": {
+      "pass": true,
+      "detail": {
+        "consoleErrors": [],
+        "pageErrors": []
+      }
+    },
+    "390px responsive layout": {
+      "pass": true,
+      "detail": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "h1": 1,
+        "main": 1,
+        "lang": "en",
+        "motion": "1e-05s",
+        "smallTargets": []
+      }
+    },
+    "semantic shell": {
+      "pass": true,
+      "detail": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "h1": 1,
+        "main": 1,
+        "lang": "en",
+        "motion": "1e-05s",
+        "smallTargets": []
+      }
+    },
+    "44px visible targets": {
+      "pass": true,
+      "detail": []
+    },
+    "reduced motion": {
+      "pass": true,
+      "detail": "1e-05s"
+    },
+    "axe mobile dark reduced-motion": {
+      "pass": true,
+      "detail": []
+    },
+    "legal skip link focus": {
+      "pass": true,
+      "detail": {
+        "skipText": "Skip to main content",
+        "focusedAfterSkip": "MAIN#main"
+      }
+    },
+    "visible focus styling": {
+      "pass": true,
+      "detail": {
+        "style": "solid",
+        "width": "3px",
+        "color": "rgb(138, 83, 20)"
+      }
+    },
+    "live offline reload": {
+      "pass": true,
+      "detail": {
+        "status": 200,
+        "cacheNames": [
+          "archive-audit-v3"
+        ],
+        "metrics": "4\nmessages\n2\nattachments named\n2\nattachments hashed\n0\nreferences missing"
+      }
+    }
+  },
+  "observations": {
+    "rfc2231": {
+      "metrics": "1\nmessages\n0\nattachments named\n0\nattachments hashed\n0\nreferences missing",
+      "ledger": "Message ledger — 1 message\nMESSAGE\tATTACHMENT\tSTATUS\tSHA-256\n\nContinued filename\nArchive <archive@example.test> · Tue, 02 Jan 2024 10:00:00 +0000\n\t—\tNo attachment\t—"
+    },
+    "utf8QuotedPrintable": "Message ledger — 1 message\nMESSAGE\tATTACHMENT\tSTATUS\tSHA-256\n\nCafÃ© receipt\nJosÃ© Archive <jose@example.test> · Tue, 02 Jan 2024 10:00:00 +0000\n\t—\tNo attachment\t—",
+    "duplicateReference": "2\nmessages\n2\nattachments named\n2\nattachments hashed\n0\nreferences missing",
+    "unreferencedFolderFile": {
+      "metrics": "1\nmessages\n0\nattachments named\n0\nattachments hashed\n0\nreferences missing",
+      "receiptContainsFile": false
+    }
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "url": "https://message-archive-audit.sociobot.in/",
+      "type": "document"
+    },
+    {
+      "method": "GET",
+      "url": "https://message-archive-audit.sociobot.in/assets/index-Bgb12Ss4.js",
+      "type": "script"
+    },
+    {
+      "method": "GET",
+      "url": "https://message-archive-audit.sociobot.in/assets/index-C5GLBEx9.css",
+      "type": "stylesheet"
+    },
+    {
+      "method": "GET",
+      "url": "https://message-archive-audit.sociobot.in/hero-notebook.webp",
+      "type": "image"
+    },
+    {
+      "method": "GET",
+      "url": "https://message-archive-audit.sociobot.in/?demo=1",
+      "type": "document"
+    },
+    {
+      "method": "GET",
+      "url": "https://message-archive-audit.sociobot.in/assets/index-Bgb12Ss4.js",
+      "type": "script"
+    },
+    {
+      "method": "GET",
+      "url": "https://message-archive-audit.sociobot.in/assets/index-C5GLBEx9.css",
+      "type": "stylesheet"
+    },
+    {
+      "method": "GET",
+      "url": "https://message-archive-audit.sociobot.in/hero-notebook.webp",
+      "type": "image"
+    },
+    {
+      "method": "GET",
+      "url": "https://message-archive-audit.sociobot.in/",
+      "type": "document"
+    },
+    {
+      "method": "GET",
+      "url": "https://message-archive-audit.sociobot.in/assets/index-Bgb12Ss4.js",
+      "type": "script"
+    },
+    {
+      "method": "GET",
+      "url": "https://message-archive-audit.sociobot.in/assets/index-C5GLBEx9.css",
+      "type": "stylesheet"
+    },
+    {
+      "method": "GET",
+      "url": "https://message-archive-audit.sociobot.in/hero-notebook.webp",
+      "type": "image"
+    },
+    {
+      "method": "GET",
+      "url": "https://message-archive-audit.sociobot.in/",
+      "type": "document"
+    },
+    {
+      "method": "GET",
+      "url": "https://message-archive-audit.sociobot.in/assets/index-Bgb12Ss4.js",
+      "type": "script"
+    },
+    {
+      "method": "GET",
+      "url": "https://message-archive-audit.sociobot.in/assets/index-C5GLBEx9.css",
+      "type": "stylesheet"
+    },
+    {
+      "method": "GET",
+      "url": "https://message-archive-audit.sociobot.in/hero-notebook.webp",
+      "type": "image"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "axe": {
+    "/demo": [],
+    "/privacy/": [],
+    "/terms/": [],
+    "/qa-unknown-route": []
+  }
+}
