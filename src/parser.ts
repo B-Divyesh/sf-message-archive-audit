@@ -77,45 +77,63 @@ function validateMessage(raw: string) {
   return top
 }
 
+function mimeEntity(raw: string) {
+  const headEnd = raw.search(/\r?\n\r?\n/)
+  if (headEnd < 0) return null
+  const separator = raw.slice(headEnd).match(/^\r?\n\r?\n/)?.[0] ?? ''
+  return {
+    headers: raw.slice(0, headEnd),
+    body: raw.slice(headEnd + separator.length),
+  }
+}
+
+function mimeParts(body: string, boundary: string) {
+  const escapedBoundary = boundary.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return body.split(new RegExp(`^--${escapedBoundary}(?:--)?[ \\t]*(?:\\r?\\n|$)`, 'gm')).slice(1)
+}
+
+async function collectAttachments(raw: string, attachments: Attachment[]): Promise<void> {
+  const entity = mimeEntity(raw)
+  if (!entity) return
+
+  const contentType = header(entity.headers, 'content-type')
+  const boundary = parameter(contentType, 'boundary')
+  if (boundary) {
+    for (const part of mimeParts(entity.body, boundary)) {
+      await collectAttachments(part, attachments)
+    }
+    return
+  }
+
+  const disposition = header(entity.headers, 'content-disposition')
+  const name = parameter(disposition, 'filename') || parameter(contentType, 'name')
+  if (!name || (!/attachment|inline/i.test(disposition) && !/(?:^|;)\s*name\*?=/i.test(contentType))) return
+
+  // The final line break belongs to the following MIME boundary, not the payload.
+  const body = entity.body.replace(/\r?\n$/, '')
+  const encoding = header(entity.headers, 'content-transfer-encoding')
+  if (body.length > 0 || encoding.length > 0) {
+    try {
+      const bytes = decodeBody(body, encoding)
+      attachments.push({
+        name,
+        source: 'embedded',
+        size: bytes.byteLength,
+        hash: await sha256(bytes),
+        status: 'verified',
+      })
+      return
+    } catch {
+      // An unreadable named part is retained as a missing reference.
+    }
+  }
+  attachments.push({ name, source: 'reference', size: null, status: 'missing' })
+}
+
 export async function parseEml(raw: string): Promise<Message> {
   const top = validateMessage(raw)
-  const boundary = parameter(header(top, 'content-type'), 'boundary')
-  const escapedBoundary = boundary.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  const parts = boundary
-    ? raw.split(new RegExp(`^--${escapedBoundary}(?:--)?[ \\t]*(?:\\r?\\n|$)`, 'gm')).slice(1)
-    : [raw]
   const attachments: Attachment[] = []
-
-  for (const part of parts) {
-    const headEnd = part.search(/\r?\n\r?\n/)
-    if (headEnd < 0) continue
-    const separator = part.slice(headEnd).match(/^\r?\n\r?\n/)?.[0] ?? ''
-    const partHeaders = part.slice(0, headEnd)
-    const disposition = header(partHeaders, 'content-disposition')
-    const contentType = header(partHeaders, 'content-type')
-    const name = parameter(disposition, 'filename') || parameter(contentType, 'name')
-    if (!name || (!/attachment|inline/i.test(disposition) && !/(?:^|;)\s*name\*?=/i.test(contentType))) continue
-
-    // The final line break belongs to the following MIME boundary, not the payload.
-    const body = part.slice(headEnd + separator.length).replace(/\r?\n$/, '')
-    const encoding = header(partHeaders, 'content-transfer-encoding')
-    if (body.length > 0 || encoding.length > 0) {
-      try {
-        const bytes = decodeBody(body, encoding)
-        attachments.push({
-          name,
-          source: 'embedded',
-          size: bytes.byteLength,
-          hash: await sha256(bytes),
-          status: 'verified',
-        })
-        continue
-      } catch {
-        // An unreadable named part is retained as a missing reference.
-      }
-    }
-    attachments.push({ name, source: 'reference', size: null, status: 'missing' })
-  }
+  await collectAttachments(raw, attachments)
 
   return {
     subject: header(top, 'subject') || '(no subject)',

@@ -18,6 +18,16 @@ describe('email parser', () => {
     }])
   })
 
+  it('finds and hashes an attachment inside nested MIME multiparts', async () => {
+    const raw = `From: QA <qa@example.test>\r\nSubject: Nested evidence\r\nDate: Thu, 01 Aug 2026 12:00:00 +0000\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary="outer"\r\n\r\n--outer\r\nContent-Type: multipart/related; boundary="inner"\r\n\r\n--inner\r\nContent-Type: text/plain\r\n\r\nSee attached evidence.\r\n--inner\r\nContent-Type: application/pdf; name="evidence.pdf"\r\nContent-Disposition: attachment; filename="evidence.pdf"\r\nContent-Transfer-Encoding: base64\r\n\r\ncHJvb2Y=\r\n--inner--\r\n--outer--\r\n`
+    const message = await parseEml(raw)
+
+    expect(message.attachments).toEqual([{
+      name: 'evidence.pdf', source: 'embedded', size: 5,
+      hash: 'c1cda26362828b69266512052b97cb3729e3b052e4ade47c0a1e3383defe73c7', status: 'verified',
+    }])
+  })
+
   it('decodes and hashes standard 7-bit MIME attachment bytes', async () => {
     const message = await parseEml(envelope('Content-Type: text/plain; name="notes.txt"\r\nContent-Disposition: attachment; filename="notes.txt"\r\nContent-Transfer-Encoding: 7bit\r\n\r\nplain attachment'))
     expect(message.attachments).toEqual([{

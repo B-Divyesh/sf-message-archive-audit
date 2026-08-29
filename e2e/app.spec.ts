@@ -31,6 +31,17 @@ test('@claim:mime-audit audits EML and MBOX plus base64 and 7-bit attachments', 
   const zeroByteRow = page.locator('tbody tr').filter({ hasText: 'empty.bin' })
   await expect(zeroByteRow).toContainText('0 bytes')
   await expect(zeroByteRow).toContainText('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+
+  const nestedAttachment = `From: QA <qa@example.test>\r\nSubject: Nested evidence\r\nDate: Thu, 01 Aug 2026 12:00:00 +0000\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary="outer"\r\n\r\n--outer\r\nContent-Type: multipart/related; boundary="inner"\r\n\r\n--inner\r\nContent-Type: text/plain\r\n\r\nSee attached evidence.\r\n--inner\r\nContent-Type: application/pdf; name="evidence.pdf"\r\nContent-Disposition: attachment; filename="evidence.pdf"\r\nContent-Transfer-Encoding: base64\r\n\r\ncHJvb2Y=\r\n--inner--\r\n--outer--\r\n`
+  await page.locator('#mail-files').setInputFiles({
+    name: 'nested.eml', mimeType: 'message/rfc822', buffer: Buffer.from(nestedAttachment),
+  })
+  await page.getByRole('button', { name: 'Audit selected files' }).click()
+  await expect(page.locator('.metrics > div').filter({ hasText: 'attachments named' }).locator('b')).toHaveText('1')
+  await expect(page.locator('.metrics > div').filter({ hasText: 'attachments hashed' }).locator('b')).toHaveText('1')
+  const nestedRow = page.locator('tbody tr').filter({ hasText: 'evidence.pdf' })
+  await expect(nestedRow).toContainText('5 bytes')
+  await expect(nestedRow).toContainText('c1cda26362828b69266512052b97cb3729e3b052e4ade47c0a1e3383defe73c7')
 })
 
 test('@claim:local-only keeps the complete demo flow on-origin and out of real storage', async ({ page }) => {
