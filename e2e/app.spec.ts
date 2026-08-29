@@ -11,6 +11,20 @@ async function waitForDemo(page: Page) {
   await expect(page.getByText('Archive inventory complete')).toBeVisible()
 }
 
+const referencedEml = (subject: string, name: string) => `From: Archive <archive@example.test>\nSubject: ${subject}\nDate: Tue, 02 Jan 2024 10:00:00 +0000\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=x\n\n--x\nContent-Type: text/plain\n\nBody\n--x\nContent-Type: application/pdf; name="${name}"\nContent-Disposition: attachment; filename="${name}"\n\n\n--x--`
+
+async function setFolderFiles(page: Page, files: Array<{ name: string, path: string, body: string }>) {
+  await page.locator('#attachment-files').evaluate((input, nextFiles) => {
+    const transfer = new DataTransfer()
+    for (const next of nextFiles) {
+      const file = new File([next.body], next.name, { type: 'application/octet-stream' })
+      Object.defineProperty(file, 'webkitRelativePath', { value: next.path })
+      transfer.items.add(file)
+    }
+    input.files = transfer.files
+  }, files)
+}
+
 test('@claim:mime-audit audits EML and MBOX plus base64 and 7-bit attachments', async ({ page }) => {
   await waitForDemo(page)
   await expect(page.locator('.metrics')).toContainText('4messages')
@@ -175,6 +189,105 @@ test('@claim:demo-no-setup opens the completed sample in the viewport from a cle
   expect(databases).not.toContain('archive-audit')
 })
 
+test('@claim:missing-attachment-detection identifies a named file missing from the selected folder and receipt', async ({ page }) => {
+  await page.goto('/')
+  await page.locator('#mail-files').setInputFiles({
+    name: 'missing-folder-file.eml', mimeType: 'message/rfc822', buffer: Buffer.from(referencedEml('Missing attachment', 'contract.pdf')),
+  })
+  await page.getByRole('button', { name: 'Audit selected files' }).click()
+  await expect(page.locator('.metrics > div').filter({ hasText: 'references missing' }).locator('b')).toHaveText('1')
+  await expect(page.locator('tbody tr').filter({ hasText: 'contract.pdf' })).toContainText('Missing from folder')
+  const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Export CSV' }).click()])
+  expect(await readFile(await download.path(), 'utf8')).toContain('"missing"')
+})
+
+test('@claim:folder-inventory shows matched, ambiguous, and unreferenced selected folder paths', async ({ page }) => {
+  await page.goto('/')
+  await page.locator('#mail-files').setInputFiles([
+    { name: 'matched.eml', mimeType: 'message/rfc822', buffer: Buffer.from(referencedEml('Matched item', 'match.pdf')) },
+    { name: 'one.eml', mimeType: 'message/rfc822', buffer: Buffer.from(referencedEml('First duplicate', 'duplicate.pdf')) },
+    { name: 'two.eml', mimeType: 'message/rfc822', buffer: Buffer.from(referencedEml('Second duplicate', 'duplicate.pdf')) },
+  ])
+  await setFolderFiles(page, [
+    { name: 'match.pdf', path: 'selected/match.pdf', body: 'matched file' },
+    { name: 'duplicate.pdf', path: 'selected/duplicate.pdf', body: 'duplicate file' },
+    { name: 'orphan.txt', path: 'selected/notes/orphan.txt', body: 'unreferenced file' },
+  ])
+  await page.getByRole('button', { name: 'Audit selected files' }).click()
+  const folderLedger = page.getByRole('region', { name: 'Scrollable selected folder inventory' })
+  await expect(folderLedger).toContainText('selected/match.pdf')
+  await expect(folderLedger).toContainText('Matched to one message attachment')
+  await expect(folderLedger).toContainText('selected/duplicate.pdf')
+  await expect(folderLedger).toContainText('Duplicate name; match is not unique')
+  await expect(folderLedger).toContainText('selected/notes/orphan.txt')
+  await expect(folderLedger).toContainText('Not referenced by a message attachment')
+})
+
+test('@claim:no-telemetry makes only expected same-origin static GET requests', async ({ page }) => {
+  const requests: Array<{ url: string, method: string }> = []
+  page.on('request', request => requests.push({ url: request.url(), method: request.method() }))
+  await page.goto('/')
+  await page.getByRole('link', { name: 'Try it with sample data' }).click()
+  await expect(page.getByText('Archive inventory complete')).toBeVisible()
+  await page.getByRole('button', { name: 'Export JSON' }).click()
+  await page.goto('/')
+  await page.locator('#mail-files').setInputFiles({ name: 'private.eml', mimeType: 'message/rfc822', buffer: Buffer.from(validEml()) })
+  await page.getByRole('button', { name: 'Audit selected files' }).click()
+  await page.getByRole('button', { name: 'Export CSV' }).click()
+  expect(requests.length).toBeGreaterThan(0)
+  for (const request of requests) {
+    const url = new URL(request.url)
+    expect(request.method).toBe('GET')
+    expect(url.origin).toBe('http://127.0.0.1:4173')
+    expect(url.pathname === '/' || /^(\/(assets|src|@vite|node_modules|icons)\/|\/(hero-notebook\.webp|sw\.js|manifest\.webmanifest|favicon\.ico)$)/.test(url.pathname)).toBe(true)
+  }
+})
+
+test('@claim:demo-reset restores the shipped sample after a changed demo audit', async ({ page }) => {
+  await waitForDemo(page)
+  await page.locator('#mail-files').setInputFiles({ name: 'changed-demo.eml', mimeType: 'message/rfc822', buffer: Buffer.from(validEml('Changed demo')) })
+  await page.getByRole('button', { name: 'Audit selected files' }).click()
+  await expect(page.getByText('Changed demo', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Reset demo' }).click()
+  await expect(page.getByText('Archive inventory complete')).toBeVisible()
+  await expect(page.getByText('Changed demo', { exact: true })).toHaveCount(0)
+  await expect(page.locator('.metrics > div').filter({ hasText: 'messages' }).locator('b')).toHaveText('4')
+})
+
+test('@claim:clear-report retains a report on cancel and deletes it after confirmation', async ({ page }) => {
+  const source = validEml('Saved report')
+  await page.goto('/')
+  await page.locator('#mail-files').setInputFiles({ name: 'saved-report.eml', mimeType: 'message/rfc822', buffer: Buffer.from(source) })
+  await page.getByRole('button', { name: 'Audit selected files' }).click()
+  await expect(page.getByText('Saved report', { exact: true })).toBeVisible()
+  page.once('dialog', dialog => dialog.dismiss())
+  await page.getByRole('button', { name: 'Clear local report' }).click()
+  await expect(page.getByText('Saved report', { exact: true })).toBeVisible()
+  page.once('dialog', dialog => dialog.accept())
+  await page.getByRole('button', { name: 'Clear local report' }).click()
+  await expect(page.getByLabel('Audit results').getByText('Local audit summary cleared.')).toBeVisible()
+  expect(source).toBe(validEml('Saved report'))
+  await page.reload()
+  await expect(page.getByText('Saved report', { exact: true })).toHaveCount(0)
+  await expect(page.getByText('Local audit summary cleared.')).toHaveCount(0)
+})
+
+test('@claim:scope-limits rejects encrypted-style input and receipts list selected files only', async ({ page }) => {
+  const requests: string[] = []
+  page.on('request', request => requests.push(request.url()))
+  await page.goto('/')
+  const encrypted = `From: Locked <locked@example.test>\nSubject: Locked mail\nMIME-Version: 1.0\nContent-Type: application/pkcs7-mime; smime-type=enveloped-data\n\nnot-decryptable`
+  await page.locator('#mail-files').setInputFiles({ name: 'locked.eml', mimeType: 'message/rfc822', buffer: Buffer.from(encrypted) })
+  await page.getByRole('button', { name: 'Audit selected files' }).click()
+  await expect(page.getByRole('alert')).toContainText('could not be audited')
+  await page.locator('#mail-files').setInputFiles({ name: 'selected-only.eml', mimeType: 'message/rfc822', buffer: Buffer.from(validEml('Selected only')) })
+  await page.getByRole('button', { name: 'Audit selected files' }).click()
+  const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Export JSON' }).click()])
+  const receipt = JSON.parse(await readFile(await download.path(), 'utf8'))
+  expect(receipt.sources).toEqual(['selected-only.eml'])
+  expect(requests.every(url => new URL(url).origin === 'http://127.0.0.1:4173')).toBe(true)
+})
+
 test('rejects empty and nonsense EML instead of producing an audit stamp', async ({ page }) => {
   await page.goto('/')
   for (const [name, content] of [['empty.eml', ''], ['nonsense.eml', 'this is not an email']]) {
@@ -330,18 +443,22 @@ test('keyboard entry, skip link, legal shells, and designed 404 remain operable'
 
 test('every public route has its own complete metadata and the deployment config preserves 404s', async ({ page }) => {
   const routes = [
-    ['/', 'Archive Audit — check an email export'],
-    ['/?demo=1', 'Demo — Archive Audit'],
-    ['/privacy/', 'Privacy — Archive Audit'],
-    ['/terms/', 'Terms — Archive Audit'],
-    ['/404.html', 'Page not found — Archive Audit'],
+    ['/', 'Archive Audit — check an email export', 'Archive Audit — check an email export', 'https://message-archive-audit.sociobot.in/'],
+    ['/?demo=1', 'Demo — Archive Audit', 'Demo — Archive Audit', 'https://message-archive-audit.sociobot.in/demo'],
+    ['/privacy/', 'Privacy — Archive Audit', 'Privacy — Archive Audit', 'https://message-archive-audit.sociobot.in/privacy/'],
+    ['/terms/', 'Terms — Archive Audit', 'Terms — Archive Audit', 'https://message-archive-audit.sociobot.in/terms/'],
+    ['/404.html', 'Page not found — Archive Audit', 'Page not found — Archive Audit', 'https://message-archive-audit.sociobot.in/404'],
   ]
-  for (const [route, title] of routes) {
+  for (const [route, title, socialTitle, canonical] of routes) {
     await page.goto(route)
     await expect(page).toHaveTitle(title)
     for (const selector of ['meta[name="description"]', 'link[rel="canonical"]', 'meta[property="og:title"]', 'meta[property="og:description"]', 'meta[property="og:image"]', 'meta[name="twitter:card"]', 'meta[name="twitter:title"]', 'meta[name="twitter:description"]', 'meta[name="twitter:image"]', 'meta[name="theme-color"]', 'link[rel="icon"]', 'link[rel="apple-touch-icon"]']) {
       await expect(page.locator(selector), `${route} missing ${selector}`).toHaveCount(1)
     }
+    await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', socialTitle)
+    await expect(page.locator('meta[name="twitter:title"]')).toHaveAttribute('content', socialTitle)
+    await expect(page.locator('meta[property="og:url"]')).toHaveAttribute('content', canonical)
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', canonical)
   }
   const config = JSON.parse(await readFile('public/staticwebapp.config.json', 'utf8'))
   expect(config.navigationFallback).toBeUndefined()

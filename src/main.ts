@@ -6,7 +6,8 @@ import type { ArchiveReport, FolderFile } from './types'
 
 const isDemo = location.pathname.replace(/\/$/, '') === '/demo' || new URLSearchParams(location.search).get('demo') === '1'
 const databaseName = 'archive-audit'
-const buildId = 'repair-5'
+const buildId = 'repair-6'
+const siteUrl = 'https://message-archive-audit.sociobot.in'
 
 let report: ArchiveReport | null = null
 let mailInput: HTMLInputElement
@@ -103,9 +104,28 @@ function footer() {
   return `<footer><p>Check email exports before account or device access ends.</p><nav aria-label="Footer links"><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><span>Built by Param Factory</span></nav><p>Original generated artwork · Build ${buildId}</p></footer>`
 }
 
+function setMeta(selector: string, content: string) {
+  document.querySelector<HTMLMetaElement>(selector)?.setAttribute('content', content)
+}
+
+function setRouteMetadata() {
+  const title = isDemo ? 'Demo — Archive Audit' : 'Archive Audit — check an email export'
+  const description = isDemo
+    ? 'Open a completed sample email-export audit. Demo data stays in memory and is not saved.'
+    : 'Check EML and MBOX exports, hash attachments, find missing files, and save a local receipt.'
+  const canonical = isDemo ? `${siteUrl}/demo` : `${siteUrl}/`
+  document.title = title
+  document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute('href', canonical)
+  setMeta('meta[name="description"]', description)
+  setMeta('meta[property="og:title"]', title)
+  setMeta('meta[property="og:description"]', description)
+  setMeta('meta[property="og:url"]', canonical)
+  setMeta('meta[name="twitter:title"]', title)
+  setMeta('meta[name="twitter:description"]', description)
+}
+
 function renderApp() {
-  document.title = isDemo ? 'Demo — Archive Audit' : 'Archive Audit — check an email export'
-  if (isDemo) document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute('href', 'https://message-archive-audit.sociobot.in/demo')
+  setRouteMetadata()
   $('#app').innerHTML = `${isDemo ? `<aside class="demo-banner" aria-label="Demo status"><strong>Demo — sample data, nothing is saved</strong><div><button id="reset-demo" class="quiet" type="button">Reset demo</button><a class="quiet" href="/">Start for real</a></div></aside>` : ''}
   ${header()}
   <main id="main" tabindex="-1">
@@ -119,11 +139,11 @@ function renderApp() {
     </section>
     <section class="workspace" aria-labelledby="audit-heading"><div class="section-heading"><p class="eyebrow">New audit</p><h2 id="audit-heading">Choose an email export</h2></div>
       <div class="drop-grid"><label class="dropzone" for="mail-files"><strong>Email exports</strong><span>EML message files or MBOX email collections</span><input id="mail-files" type="file" accept=".mbox,.eml,message/rfc822" multiple></label><label class="dropzone optional" for="attachment-files"><strong>Attachment folder <small>optional</small></strong><span>Choose files from the exported attachment folder</span><input id="attachment-files" type="file" multiple webkitdirectory></label></div>
-      <div class="actions"><button id="audit" class="primary" type="button">Audit selected files</button></div><p class="limit">Reads EML message files and MBOX email collections. It cannot read encrypted or provider-only stores.</p>
+      <div class="actions"><button id="audit" class="primary" type="button">Audit selected files</button></div><p class="limit">Reads EML message files and MBOX email collections. It does not decrypt mail or access email providers.</p>
     </section>
     <section id="results" class="results" aria-live="polite" aria-label="Audit results"></section>
     <section id="how" class="how"><p class="eyebrow">How it works</p><h2>Make a receipt in three steps</h2><ol><li><strong>Choose</strong> EML message files or MBOX email collections and an optional attachment folder.</li><li><strong>Check</strong> message counts, named attachments, missing files, and file hashes (SHA-256).</li><li><strong>Save</strong> a complete HTML, CSV, or JSON receipt beside the email export.</li></ol></section>
-    <section class="limits" aria-labelledby="limits-heading"><p class="eyebrow">Privacy and limits</p><h2 id="limits-heading">Your files remain under your control</h2><p>Files stay in this browser. A real audit saves a local audit summary until you clear it. Demo audit summaries stay in memory.</p><p>A downloaded receipt inventories selected files. It cannot prove that a provider included every message.</p></section>
+    <section class="limits" aria-labelledby="limits-heading"><p class="eyebrow">Privacy and limits</p><h2 id="limits-heading">File storage and audit limits</h2><p>Files stay in this browser. A real audit saves a local audit summary until you clear it. Demo audit summaries stay in memory.</p><p>A downloaded receipt lists only the files you select.</p></section>
   </main>${footer()}<div id="route-announce" class="sr-only" aria-live="polite"></div><div id="announce" class="sr-only" aria-live="polite"></div><div id="toast" class="toast" role="status" hidden></div>`
 
   mailInput = $('#mail-files')

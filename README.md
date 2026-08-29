@@ -24,7 +24,7 @@ npm run test:e2e
 
 ## Limits
 
-Archive Audit does not decrypt mail, recover missing messages, contact providers, or read proprietary message databases. A receipt inventories selected files; it does not certify that a provider supplied every message.
+Archive Audit does not decrypt mail or access email providers. A receipt lists only files you select.
 
 See [Privacy](public/privacy/index.html) and [Terms](public/terms/index.html). The project is available under the [MIT License](LICENSE).
 

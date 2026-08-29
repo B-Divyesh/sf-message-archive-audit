@@ -64,6 +64,11 @@ describe('email parser', () => {
     await expect(parseEml(raw)).rejects.toThrow()
   })
 
+  it('rejects encrypted S/MIME-style mail instead of presenting it as readable', async () => {
+    const encrypted = 'From: Locked <locked@example.test>\r\nSubject: Locked\r\nMIME-Version: 1.0\r\nContent-Type: application/pkcs7-mime; smime-type=enveloped-data\r\n\r\nnot-decryptable'
+    await expect(parseEml(encrypted)).rejects.toThrow('Encrypted mail is not supported.')
+  })
+
   it('rejects an MBOX without separators and counts a valid two-message MBOX', async () => {
     await expect(parseMailFile(new File(['Subject: no separator\n\nbody'], 'mail.mbox'))).rejects.toThrow(/separators/)
     const raw = 'From one@example.test Tue Jan 02 10:00:00 2024\nFrom: One <one@example.test>\nSubject: One\n\nFirst\nFrom two@example.test Tue Jan 02 11:00:00 2024\nFrom: Two <two@example.test>\nSubject: Two\n\nSecond'

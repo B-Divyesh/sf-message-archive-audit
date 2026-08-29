@@ -174,6 +174,9 @@ async function collectAttachments(raw: string, attachments: Attachment[]): Promi
 
 export async function parseEml(raw: string): Promise<Message> {
   const top = validateMessage(raw)
+  if (/application\/(?:x-)?pkcs7-mime|application\/pkcs7-signature/i.test(header(top, 'content-type'))) {
+    throw new Error('Encrypted mail is not supported.')
+  }
   const attachments: Attachment[] = []
   await collectAttachments(raw, attachments)
 

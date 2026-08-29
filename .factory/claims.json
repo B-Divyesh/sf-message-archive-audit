@@ -47,5 +47,47 @@
     "where": "landing page",
     "test": "npm run test:e2e -- --grep @claim:demo-no-setup",
     "sandbox": "fresh browser context at /; click Try it with sample data; assert no real audit storage and completed results visible in the viewport"
+  },
+  {
+    "id": "missing-attachment-detection",
+    "claim": "Finds named attachment references that are missing from the selected attachment folder.",
+    "where": "home metadata, how it works",
+    "test": "npm run test:e2e -- --grep @claim:missing-attachment-detection",
+    "sandbox": "fresh browser context; audit a controlled message naming an attachment with an empty folder; assert the missing metric, ledger status, and downloaded receipt"
+  },
+  {
+    "id": "folder-inventory",
+    "claim": "Shows every selected attachment-folder file with its relative path and match status.",
+    "where": "README, selected folder inventory",
+    "test": "npm run test:e2e -- --grep @claim:folder-inventory",
+    "sandbox": "fresh browser context; use controlled matched, ambiguous, and unreferenced folder files; assert each path and status in the visible folder ledger"
+  },
+  {
+    "id": "no-telemetry",
+    "claim": "Makes no analytics, advertising, account, payment, or AI requests, and downloads receipts in the browser.",
+    "where": "Privacy page",
+    "test": "npm run test:e2e -- --grep @claim:no-telemetry",
+    "sandbox": "fresh browser context; record landing, demo, real audit, and receipt-export requests; assert every request is an expected same-origin static GET"
+  },
+  {
+    "id": "demo-reset",
+    "claim": "Reset demo restores the bundled sample audit.",
+    "where": "demo banner",
+    "test": "npm run test:e2e -- --grep @claim:demo-reset",
+    "sandbox": "fresh browser context at /demo; replace the sample with a controlled audit, reset, and assert the shipped four-message sample returns"
+  },
+  {
+    "id": "clear-report",
+    "claim": "Clear local report removes the saved local audit summary without changing source files.",
+    "where": "Privacy page, real-audit report action",
+    "test": "npm run test:e2e -- --grep @claim:clear-report",
+    "sandbox": "fresh browser context; save a controlled real audit, exercise cancel and confirm, reload, and assert saved metadata is gone while the original fixture remains unchanged"
+  },
+  {
+    "id": "scope-limits",
+    "claim": "Reads selected EML or MBOX files only; it does not decrypt mail, access providers, or certify unselected files.",
+    "where": "landing limits, README, Terms",
+    "test": "npm run test:e2e -- --grep @claim:scope-limits",
+    "sandbox": "fresh browser context; submit controlled encrypted-style input and a selected EML, assert rejection or selected-file-only receipt contents, and record no provider requests"
   }
 ]

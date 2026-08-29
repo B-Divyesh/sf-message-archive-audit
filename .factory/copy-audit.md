@@ -1,13 +1,13 @@
 # Copy audit
 
-Audited 2026-08-29. Counts treat hyphenated terms and file formats as one word. No line exceeds 22 words. No banned marketing term appears.
+Audited 2026-08-29. Counts treat each whitespace-delimited token, including hyphenated terms, versions, paths, and file formats, as one word. Punctuation does not add words. No line exceeds 22 words. No banned marketing term appears.
 
 ## First screen
 
 | Copy | Words |
 | --- | ---: |
 | Check an email export before access ends | 7 |
-| For people leaving an account or device who need a clear record of saved messages and attachments. | 16 |
+| For people leaving an account or device who need a clear record of saved messages and attachments. | 17 |
 | Try it with sample data | 5 |
 | Check your own export | 4 |
 | The sample opens a complete audit. | 6 |
@@ -30,17 +30,16 @@ The first screen states the job, names the person facing lost access, and gives 
 | Choose files from the exported attachment folder | 7 |
 | Audit selected files | 3 |
 | Reads EML message files and MBOX email collections. | 8 |
-| It cannot read encrypted or provider-only stores. | 7 |
+| It does not decrypt mail or access email providers. | 9 |
 | Make a receipt in three steps | 6 |
-| Choose EML message files or MBOX email collections and an optional attachment folder. | 12 |
-| Check message counts, named attachments, missing files, and file hashes (SHA-256). | 10 |
+| Choose EML message files or MBOX email collections and an optional attachment folder. | 13 |
+| Check message counts, named attachments, missing files, and file hashes (SHA-256). | 11 |
 | Save a complete HTML, CSV, or JSON receipt beside the email export. | 12 |
-| Your files remain under your control | 7 |
+| File storage and audit limits | 5 |
 | Files stay in this browser. | 5 |
 | A real audit saves a local audit summary until you clear it. | 12 |
 | Demo audit summaries stay in memory. | 6 |
-| A downloaded receipt inventories selected files. | 6 |
-| It cannot prove that a provider included every message. | 9 |
+| A downloaded receipt lists only the files you select. | 8 |
 | Check email exports before account or device access ends. | 9 |
 
 ## Audit results
