@@ -86,7 +86,33 @@ Use `http://127.0.0.1:4173/demo` after serving `dist/` for the verifier sandbox.
 
 ## Deployment and live identity
 
-Deployment and post-deploy response/header identity checks are recorded in the final section after the repair commit is uploaded.
+Deployed with the work order’s static deployment helper to Azure Static Web Apps in `centralus`.
+
+```text
+Production URL       https://message-archive-audit.sociobot.in
+Deployment ID        45ecccdd-ebea-474b-ad44-c607d806264d
+Product commit       a3d4093
+Custom domain        Ready; HTTPS 200
+index.html SHA-256   ae6fe0741c4b03425ff19f871be0b96e557981c9c0a63b0affe354eb4900ac97
+application JS hash  e04f824fc12f6f21f5fbd22495342bd58793da8f468a2d40c7ad6a344adb40e9
+sw.js SHA-256        66ed048deffb2bd091f9ccda5bcb542d6dd0407d873ad7dd096dcf75cf28c030
+```
+
+Each live hash matched the local `dist/` artifact byte for byte. Live response checks found `Cache-Control: no-cache` on HTML and `sw.js`, plus `public, max-age=31536000, immutable` on hashed assets. CSP, `frame-ancestors 'none'`, Permissions Policy, X-Frame-Options, Referrer Policy, and `nosniff` are present.
+
+Live route checks:
+
+```text
+/demo              200 text/html
+/privacy/          200 text/html
+/terms/            200 text/html
+/404               404 text/html; designed Archive Audit page
+/robots.txt        200 text/plain
+/sitemap.xml       200 text/xml
+unknown static URL 404 text/html; designed Archive Audit page
+```
+
+`verify-url.sh` against production passed in 644ms with no console errors, one H1, `lang=en`, main landmark, alt text, and labeled buttons. A fresh 390px live browser loaded four demo messages, reported no overflow, no external requests, zero serious/critical axe issues, acquired a service-worker controller, and reloaded the completed demo offline with no console or page errors.
 
 ## Known gaps
 
