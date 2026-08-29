@@ -1,66 +1,247 @@
 import './style.css'
 import './hero.css'
+import { escapeHtml, receiptRows, reportCsv, reportHtml } from './exports'
 import { parseMailFile, reconcile, sha256 } from './parser'
 import type { ArchiveReport } from './types'
 
-const dbName = 'archive-audit';
-function dbGet(): Promise<ArchiveReport | null> { return new Promise((resolve) => { const r = indexedDB.open(dbName, 1); r.onupgradeneeded = () => r.result.createObjectStore('reports'); r.onsuccess = () => { const q = r.result.transaction('reports').objectStore('reports').get('latest'); q.onsuccess = () => resolve(q.result || null); q.onerror = () => resolve(null) }; r.onerror = () => resolve(null) }) }
-function dbSave(report: ArchiveReport): Promise<void> { return new Promise((resolve) => { const r = indexedDB.open(dbName, 1); r.onupgradeneeded = () => r.result.createObjectStore('reports'); r.onsuccess = () => { r.result.transaction('reports', 'readwrite').objectStore('reports').put(report, 'latest').onsuccess = () => resolve() }; r.onerror = () => resolve() }) }
+const isDemo = location.pathname.replace(/\/$/, '') === '/demo' || new URLSearchParams(location.search).get('demo') === '1'
+const databaseName = 'archive-audit'
+const buildId = 'repair-1'
 
 let report: ArchiveReport | null = null
-let mailInput: HTMLInputElement, folderInput: HTMLInputElement, results: HTMLElement, announce: HTMLElement
-const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!
-const escape = (s: string) => s.replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' }[c]!))
-const plural = (n: number, word: string) => `${n.toLocaleString()} ${word}${n === 1 ? '' : 's'}`
+let mailInput: HTMLInputElement
+let folderInput: HTMLInputElement
+let results: HTMLElement
+let announce: HTMLElement
 
-function app() {
-  document.querySelector('#app')!.innerHTML = `
-  <header class="top"><a class="brand" href="/" aria-label="Archive Audit home"><span class="brand-mark">✓</span> Archive Audit</a><nav aria-label="Product links"><a href="#how">How it works</a><a href="/privacy/">Privacy</a><button class="quiet" id="theme" aria-label="Switch color theme">◐</button></nav></header>
+const $ = <T extends HTMLElement>(selector: string) => document.querySelector<T>(selector)!
+const plural = (count: number, word: string) => `${count.toLocaleString()} ${word}${count === 1 ? '' : 's'}`
+
+function openDatabase() {
+  return new Promise<IDBDatabase>((resolve, reject) => {
+    const request = indexedDB.open(databaseName, 1)
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains('reports')) request.result.createObjectStore('reports')
+    }
+    request.onsuccess = () => resolve(request.result)
+    request.onerror = () => reject(request.error)
+  })
+}
+
+async function dbGet(): Promise<ArchiveReport | null> {
+  try {
+    const database = await openDatabase()
+    return await new Promise(resolve => {
+      const request = database.transaction('reports').objectStore('reports').get('latest')
+      request.onsuccess = () => resolve(request.result || null)
+      request.onerror = () => resolve(null)
+    })
+  } catch {
+    return null
+  }
+}
+
+async function dbSave(nextReport: ArchiveReport) {
+  if (isDemo) return
+  const database = await openDatabase()
+  await new Promise<void>((resolve, reject) => {
+    const request = database.transaction('reports', 'readwrite').objectStore('reports').put(nextReport, 'latest')
+    request.onsuccess = () => resolve()
+    request.onerror = () => reject(request.error)
+  })
+}
+
+async function dbClear() {
+  const database = await openDatabase()
+  await new Promise<void>((resolve, reject) => {
+    const request = database.transaction('reports', 'readwrite').objectStore('reports').delete('latest')
+    request.onsuccess = () => resolve()
+    request.onerror = () => reject(request.error)
+  })
+}
+
+function header() {
+  return `<header class="top">
+    <a class="brand" href="/" aria-label="Archive Audit home"><span class="brand-mark" aria-hidden="true">✓</span> Archive Audit</a>
+    <nav aria-label="Product links"><a href="/demo">Demo</a><a href="/#how">How it works</a><a href="/privacy/">Privacy</a><button class="theme quiet" id="theme" type="button" aria-label="Use dark color theme" aria-pressed="false">◐</button></nav>
+  </header>`
+}
+
+function footer() {
+  return `<footer><p>Check email exports before account or device access ends.</p><nav aria-label="Footer links"><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><span>Built by Param Factory</span></nav><p>Original generated artwork · Build ${buildId}</p></footer>`
+}
+
+function renderApp() {
+  document.title = isDemo ? 'Demo — Archive Audit' : 'Archive Audit — check an email export'
+  if (isDemo) document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute('href', 'https://message-archive-audit.sociobot.in/demo')
+  $('#app').innerHTML = `${isDemo ? `<aside class="demo-banner" aria-label="Demo status"><strong>Demo — sample data, nothing is saved</strong><div><button id="reset-demo" class="quiet" type="button">Reset demo</button><a class="quiet" href="/">Start for real</a></div></aside>` : ''}
+  ${header()}
   <main id="main" tabindex="-1">
-    <section class="intro" aria-labelledby="page-title"><div><p class="eyebrow">Local archive inspection</p><h1 id="page-title">Keep the evidence. Check the gaps.</h1><p class="lede">Open an MBOX or EML export on this device. Archive Audit counts messages, verifies embedded attachments, matches attachment folders, and makes a receipt you can keep.</p><p class="quiet-copy">Nothing is uploaded. It runs in your browser, even after installation.</p></div><figure class="notebook-art"><img src="/hero-notebook.webp" width="640" height="640" decoding="async" fetchpriority="high" alt="A field notebook beside a sealed envelope, paperclip, attachment photographs, and verification mark."><figcaption>Original generated notebook study</figcaption></figure></section>
-    <section class="workspace" aria-labelledby="audit-heading"><div class="section-heading"><p class="eyebrow">New audit</p><h2 id="audit-heading">Put your export on the desk</h2></div><div class="drop-grid"><label class="dropzone" for="mail-files"><strong>Message exports</strong><span>MBOX or EML files</span><input id="mail-files" type="file" accept=".mbox,.eml,message/rfc822" multiple></label><label class="dropzone optional" for="attachment-files"><strong>Attachment folder <small>optional</small></strong><span>Choose files from the exported attachment folder</span><input id="attachment-files" type="file" multiple webkitdirectory></label></div><div class="actions"><button id="audit" class="primary">Audit selected files</button><button id="example" class="quiet">Load a safe example</button></div><p class="limit">Format limits: reads standard MIME EML and text MBOX exports. Encrypted, proprietary, and provider-only stores cannot be inspected here.</p></section>
-    <section id="results" class="results" aria-live="polite"></section>
-    <section id="how" class="how"><p class="eyebrow">Method note</p><h2>What the receipt can prove</h2><ol><li>It inventories the MBOX/EML files you gave it.</li><li>It hashes readable embedded attachment bytes with SHA-256.</li><li>It names missing or separately supplied attachment references. It does not contact any mail provider.</li></ol></section>
-    <section class="unlock" aria-labelledby="unlock-title"><div><p class="eyebrow">Optional one-time unlock</p><h2 id="unlock-title">Keep a signed index sheet</h2><p>The free audit, CSV, JSON and HTML receipt are permanent. An optional one-time upgrade adds a signed index sheet and retained audit history. Price is shown at secure checkout.</p></div><div><a class="buy primary" href="https://api.sociobot.in/api/v1/products/message-archive-audit/checkout">View one-time upgrade</a><details><summary>Already have a license?</summary><label for="license">Paste your license token</label><div class="restore"><input id="license" autocomplete="off"><button id="restore" class="quiet">Restore</button></div><p id="license-state" class="quiet-copy"></p></details></div></section>
-  </main><footer>Made for archive handoffs, not account access. Artwork is AI-generated, product data stays on this device. <a href="/terms/">Terms</a></footer><div id="announce" class="sr-only" aria-live="polite"></div><div id="toast" class="toast" hidden></div>`
-  mailInput = $('#mail-files'); folderInput = $('#attachment-files'); results = $('#results'); announce = $('#announce')
-  $('#audit').addEventListener('click', audit); $('#example').addEventListener('click', example); $('#theme').addEventListener('click', toggleTheme); $('#restore').addEventListener('click', restoreLicense)
-  const params = new URLSearchParams(location.search); const license = params.get('license'); if (license) { localStorage.setItem('sb_license:message-archive-audit', license); history.replaceState({}, '', location.pathname); verifyLicense(license) } else verifyLicense(localStorage.getItem('sb_license:message-archive-audit'))
+    <section class="intro" aria-labelledby="page-title">
+      <div><p class="eyebrow">Local email archive check</p><h1 id="page-title">Check an email export before access ends</h1><p class="lede">For people leaving an account or device who need a clear record of saved messages and attachments.</p>
+        <div class="hero-actions"><a class="primary" href="/demo">Try it with sample data</a><a class="text-action" href="#audit-heading">Check your own export</a></div>
+        <p class="action-note">The sample opens a complete audit. No setup is needed.</p>
+        <ul class="plain-facts"><li>Files stay on this device.</li><li>Works offline after the first visit.</li><li>Free. No account.</li></ul>
+      </div>
+      <figure class="notebook-art"><img src="/hero-notebook.webp" width="640" height="640" decoding="async" fetchpriority="high" alt="A field notebook with an envelope and attachment photographs ready for checking."><figcaption>Original generated notebook study</figcaption></figure>
+    </section>
+    <section class="workspace" aria-labelledby="audit-heading"><div class="section-heading"><p class="eyebrow">New audit</p><h2 id="audit-heading">Choose your message export</h2></div>
+      <div class="drop-grid"><label class="dropzone" for="mail-files"><strong>Message exports</strong><span>MBOX or EML files</span><input id="mail-files" type="file" accept=".mbox,.eml,message/rfc822" multiple></label><label class="dropzone optional" for="attachment-files"><strong>Attachment folder <small>optional</small></strong><span>Choose files from the exported attachment folder</span><input id="attachment-files" type="file" multiple webkitdirectory></label></div>
+      <div class="actions"><button id="audit" class="primary" type="button">Audit selected files</button></div><p class="limit">Reads standard MIME EML and text MBOX. It cannot read encrypted or provider-only stores.</p>
+    </section>
+    <section id="results" class="results" aria-live="polite" aria-label="Audit results"></section>
+    <section id="how" class="how"><p class="eyebrow">How it works</p><h2>Make a receipt in three steps</h2><ol><li><strong>Choose</strong> EML or MBOX exports and an optional attachment folder.</li><li><strong>Check</strong> message counts, named attachments, missing files, and SHA-256 hashes.</li><li><strong>Save</strong> a complete HTML, CSV, or JSON receipt beside the source export.</li></ol></section>
+    <section class="limits" aria-labelledby="limits-heading"><p class="eyebrow">Privacy and limits</p><h2 id="limits-heading">Your files remain under your control</h2><p>Archive bytes stay in this browser. A real audit stores only its report until you clear it. Demo reports stay in memory.</p><p>The receipt inventories selected files. It cannot prove that a provider included every message.</p></section>
+  </main>${footer()}<div id="announce" class="sr-only" aria-live="polite"></div><div id="toast" class="toast" role="status" hidden></div>`
+
+  mailInput = $('#mail-files')
+  folderInput = $('#attachment-files')
+  results = $('#results')
+  announce = $('#announce')
+  $('#audit').addEventListener('click', audit)
+  $('#theme').addEventListener('click', toggleTheme)
+  if (isDemo) $('#reset-demo').addEventListener('click', loadDemo)
 }
 
 async function audit() {
-  const mails = [...mailInput.files || []].filter(f => /\.(eml|mbox)$/i.test(f.name))
-  if (!mails.length) return feedback('Choose at least one .eml or .mbox file before auditing.')
-  results.innerHTML = `<div class="working"><span></span>Reading ${plural(mails.length, 'export')} locally…</div>`; announce.textContent = 'Audit in progress'
+  const mails = [...(mailInput.files || [])].filter(file => /\.(eml|mbox)$/i.test(file.name))
+  if (!mails.length) {
+    feedback('Choose at least one .eml or .mbox file, then audit again.')
+    return
+  }
+  results.innerHTML = `<div class="working"><span aria-hidden="true"></span>Reading ${plural(mails.length, 'export')} on this device…</div>`
+  announce.textContent = 'Audit in progress'
   try {
-    const folderFiles = await Promise.all([...folderInput.files || []].map(async f => ({ name: f.name, size: f.size, hash: await sha256(await f.arrayBuffer()) })))
-    const messageGroups = await Promise.all(mails.map(parseMailFile)); const messages = messageGroups.flat()
+    const folderFiles = await Promise.all([...(folderInput.files || [])].map(async file => ({
+      name: file.name, size: file.size, hash: await sha256(await file.arrayBuffer()),
+    })))
+    const messageGroups = await Promise.all(mails.map(parseMailFile))
+    const messages = messageGroups.flat()
+    if (!messages.length) throw new Error('No valid messages were found.')
     reconcile(messages, folderFiles)
-    const missing = messages.flatMap(m => m.attachments).filter(a => a.status === 'missing').length
-    report = { id: crypto.randomUUID(), createdAt: new Date().toISOString(), sources: mails.map(f => f.name), messages, folderFiles, issues: missing ? [`${plural(missing, 'attachment reference')} could not be found in the supplied folder.`] : [] }
-    await dbSave(report); renderReport(); announce.textContent = `Audit complete. ${plural(messages.length, 'message')} found.`
-  } catch (error) { feedback(`Could not read this export. Try a standard text MBOX or EML file. ${error instanceof Error ? error.message : ''}`) }
+    const missing = messages.flatMap(message => message.attachments).filter(attachment => attachment.status === 'missing').length
+    report = {
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+      sources: mails.map(file => file.name),
+      messages,
+      folderFiles,
+      issues: missing ? [`${plural(missing, 'attachment reference')} could not be found in the supplied folder.`] : [],
+    }
+    await dbSave(report)
+    renderReport()
+    announce.textContent = `Audit complete. ${plural(messages.length, 'message')} found.`
+  } catch (error) {
+    report = null
+    feedback(`This export could not be audited. ${error instanceof Error ? error.message : 'Choose a standard text MBOX or MIME EML file.'}`)
+  }
 }
 
-async function example() {
-  const raw = `From: Sam <sam@example.test>\nSubject: Trip record\nDate: Tue, 02 Jan 2024 10:00:00 +0000\nContent-Type: multipart/mixed; boundary=archive\n\n--archive\nContent-Type: text/plain\n\nHere is the receipt.\n--archive\nContent-Type: text/plain; name="ticket.txt"\nContent-Disposition: attachment; filename="ticket.txt"\nContent-Transfer-Encoding: base64\n\naGVsbG8gYXJjaGl2ZQ==\n--archive--`
-  const dt = new DataTransfer(); dt.items.add(new File([raw], 'example.eml', { type:'message/rfc822' })); mailInput.files = dt.files; await audit()
+function demoFiles() {
+  const base64 = `From: Sam <sam@example.test>\nSubject: Train booking record\nDate: Tue, 02 Jan 2024 10:00:00 +0000\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=archive\n\n--archive\nContent-Type: text/plain\n\nKeep this with the trip record.\n--archive\nContent-Type: text/plain; name="ticket.txt"\nContent-Disposition: attachment; filename="ticket.txt"\nContent-Transfer-Encoding: base64\n\naGVsbG8gYXJjaGl2ZQ==\n--archive--`
+  const sevenBit = `From: Mina <mina@example.test>\nSubject: House handover notes\nDate: Wed, 03 Jan 2024 09:30:00 +0000\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=handover\n\n--handover\nContent-Type: text/plain\n\nFinal handover.\n--handover\nContent-Type: text/plain; name="meter-reading.txt"\nContent-Disposition: attachment; filename="meter-reading.txt"\nContent-Transfer-Encoding: 7bit\n\nReading: 04217\n--handover--`
+  const mbox = `From jules@example.test Thu Jan 04 12:00:00 2024\nFrom: Jules <jules@example.test>\nSubject: Account closure confirmed\nDate: Thu, 04 Jan 2024 12:00:00 +0000\n\nYour account export is ready.\nFrom noa@example.test Thu Jan 04 12:05:00 2024\nFrom: Noa <noa@example.test>\nSubject: Forwarding address saved\nDate: Thu, 04 Jan 2024 12:05:00 +0000\n\nThe forwarding address is current.`
+  return [
+    new File([base64], 'travel.eml', { type: 'message/rfc822' }),
+    new File([sevenBit], 'handover.eml', { type: 'message/rfc822' }),
+    new File([mbox], 'closure.mbox', { type: 'application/mbox' }),
+  ]
+}
+
+async function loadDemo() {
+  const transfer = new DataTransfer()
+  demoFiles().forEach(file => transfer.items.add(file))
+  mailInput.files = transfer.files
+  folderInput.value = ''
+  await audit()
+  results.scrollIntoView({ block: 'start' })
+}
+
+function statusLabel(status: string) {
+  if (status === 'verified') return 'Embedded and hashed'
+  if (status === 'found') return 'Found separately and hashed'
+  return 'Missing from folder'
 }
 
 function renderReport() {
-  if (!report) return; const attachments = report.messages.flatMap(m => m.attachments); const verified = attachments.filter(a => a.status === 'verified').length; const missing = attachments.filter(a => a.status === 'missing').length
-  results.innerHTML = `<div class="receipt-head"><div><p class="eyebrow">Audit receipt</p><h2>${missing ? 'Needs a closer look' : 'Archive inventory complete'}</h2><p class="quiet-copy">Created ${new Date(report.createdAt).toLocaleString()} · saved locally on this device</p></div><div class="stamp ${missing ? 'warn' : ''}">${missing ? 'CHECK GAPS' : 'VERIFIED'}<small>local record</small></div></div><div class="metrics"><div><b>${report.messages.length}</b><span>messages</span></div><div><b>${attachments.length}</b><span>attachments named</span></div><div><b>${verified}</b><span>embedded & hashed</span></div><div><b>${missing}</b><span>references missing</span></div></div>${report.issues.length ? `<div class="issue" role="status"><strong>Attention needed</strong><p>${report.issues.map(escape).join(' ')}</p><p>Choose the exported attachment folder and audit again, or keep this receipt as evidence that these files were not present.</p></div>` : `<div class="good"><strong>No broken attachment references found.</strong> Embedded attachments were decoded and hashed locally.</div>`}<div class="report-actions"><button id="html" class="primary">Save HTML receipt</button><button id="csv" class="quiet">Export CSV</button><button id="json" class="quiet">Export JSON</button><button id="clear" class="quiet danger">Clear local report</button></div><details class="ledger" open><summary>Message ledger — ${plural(report.messages.length, 'message')}</summary><div class="table-wrap"><table><thead><tr><th>Message</th><th>Attachment</th><th>Status</th><th>SHA-256</th></tr></thead><tbody>${report.messages.map(m => m.attachments.length ? m.attachments.map(a => `<tr><td><b>${escape(m.subject)}</b><small>${escape(m.from)} · ${escape(m.date)}</small></td><td>${escape(a.name)}<small>${a.size == null ? 'No readable bytes' : `${a.size.toLocaleString()} bytes`}</small></td><td><span class="status ${a.status}">${a.status === 'verified' ? 'Embedded & hashed' : a.status === 'missing' ? 'Missing from folder' : 'Found separately'}</span></td><td class="hash">${a.hash || '—'}</td></tr>`).join('') : `<tr><td><b>${escape(m.subject)}</b><small>${escape(m.from)} · ${escape(m.date)}</small></td><td>—</td><td><span class="status">No attachment</span></td><td>—</td></tr>`).join('')}</tbody></table></div></details>`
-  $('#html').addEventListener('click', () => download('archive-audit-receipt.html', receiptHtml(), 'text/html')); $('#csv').addEventListener('click', () => download('archive-audit.csv', csv(), 'text/csv')); $('#json').addEventListener('click', () => download('archive-audit.json', JSON.stringify(report, null, 2), 'application/json')); $('#clear').addEventListener('click', clearReport)
+  if (!report) return
+  const attachments = report.messages.flatMap(message => message.attachments)
+  const hashed = attachments.filter(attachment => attachment.hash).length
+  const missing = attachments.filter(attachment => attachment.status === 'missing').length
+  const rows = receiptRows(report).map(({ message, attachment }) => `<tr><td><b>${escapeHtml(message.subject)}</b><small>${escapeHtml(message.from)} · ${escapeHtml(message.date)}</small></td><td>${attachment ? `${escapeHtml(attachment.name)}<small>${attachment.size == null ? 'No readable bytes' : `${attachment.size.toLocaleString()} bytes`}</small>` : '—'}</td><td>${attachment ? `<span class="status ${attachment.status}">${statusLabel(attachment.status)}</span>` : '<span class="status">No attachment</span>'}</td><td class="hash">${escapeHtml(attachment?.hash || '—')}</td></tr>`).join('')
+  results.innerHTML = `<div class="receipt-head"><div><p class="eyebrow">Audit receipt</p><h2>${missing ? 'Check missing attachment references' : 'Archive inventory complete'}</h2><p class="quiet-copy">Created ${new Date(report.createdAt).toLocaleString()} · ${isDemo ? 'demo report not saved' : 'report saved on this device'}</p></div><div class="stamp ${missing ? 'warn' : ''}">${missing ? 'CHECK GAPS' : 'INVENTORIED'}<small>local record</small></div></div>
+    <div class="metrics"><div><b>${report.messages.length}</b><span>messages</span></div><div><b>${attachments.length}</b><span>attachments named</span></div><div><b>${hashed}</b><span>attachments hashed</span></div><div><b>${missing}</b><span>references missing</span></div></div>
+    ${report.issues.length ? `<div class="issue" role="status"><strong>Attention needed</strong><p>${report.issues.map(escapeHtml).join(' ')}</p><p>Choose the attachment folder and audit again, or retain this finding in the receipt.</p></div>` : `<div class="good"><strong>No broken attachment references found.</strong> Readable embedded attachments were hashed on this device.</div>`}
+    <div class="report-actions"><button id="html" class="primary" type="button">Save HTML receipt</button><button id="csv" class="quiet" type="button">Export CSV</button><button id="json" class="quiet" type="button">Export JSON</button>${isDemo ? '' : '<button id="clear" class="quiet danger" type="button">Clear local report</button>'}</div>
+    <details class="ledger" open><summary>Message ledger — ${plural(report.messages.length, 'message')}</summary><div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable message ledger"><table><thead><tr><th>Message</th><th>Attachment</th><th>Status</th><th>SHA-256</th></tr></thead><tbody>${rows}</tbody></table></div></details>`
+  $('#html').addEventListener('click', () => download('archive-audit-receipt.html', reportHtml(report!), 'text/html'))
+  $('#csv').addEventListener('click', () => download('archive-audit.csv', reportCsv(report!), 'text/csv'))
+  $('#json').addEventListener('click', () => download('archive-audit.json', JSON.stringify(report, null, 2), 'application/json'))
+  if (!isDemo) $('#clear').addEventListener('click', clearReport)
 }
 
-function csv() { if (!report) return ''; const q = (s: unknown) => `"${String(s ?? '').replaceAll('"', '""')}"`; return ['Subject,From,Date,Attachment,Status,SHA-256', ...report.messages.flatMap(m => m.attachments.map(a => [m.subject,m.from,m.date,a.name,a.status,a.hash || ''].map(q).join(',')))].join('\n') }
-function receiptHtml() { if (!report) return ''; return `<!doctype html><html lang="en"><meta charset="utf-8"><title>Archive Audit receipt</title><style>body{font:16px system-ui;max-width:920px;margin:40px auto;padding:0 20px;color:#20261f;background:#f6f0e2}h1{font-family:Georgia,serif}table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid #b9b5a8;text-align:left;vertical-align:top}.hash{font:12px ui-monospace,monospace;word-break:break-all}.ok{color:#176547}.missing{color:#a33b2b}</style><h1>Archive Audit receipt</h1><p>Created: ${escape(report.createdAt)}<br>Sources: ${report.sources.map(escape).join(', ')}</p><h2>Summary</h2><p>${report.messages.length} messages · ${report.messages.flatMap(m=>m.attachments).length} attachments named · ${report.issues.join(' ') || 'No broken references found.'}</p><table><thead><tr><th>Message</th><th>Attachment</th><th>Status</th><th>SHA-256</th></tr></thead><tbody>${report.messages.flatMap(m => m.attachments.map(a => `<tr><td>${escape(m.subject)}</td><td>${escape(a.name)}</td><td class="${a.status === 'verified'?'ok':'missing'}">${escape(a.status)}</td><td class="hash">${a.hash || '—'}</td></tr>`)).join('')}</tbody></table><p>This receipt was generated locally by Archive Audit. It does not certify a provider export or prove that unselected source data did not exist.</p></html>` }
-function download(name:string, content:string, type:string) { const url = URL.createObjectURL(new Blob([content], {type})); const a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(()=>URL.revokeObjectURL(url), 2000) }
-function feedback(message:string) { results.innerHTML = `<div class="issue"><strong>Couldn’t start the audit</strong><p>${escape(message)}</p></div>`; announce.textContent = message }
-async function clearReport() { if (!confirm('Clear the saved local audit report? This does not delete your source files.')) return; report = null; await new Promise<void>(resolve => { const r=indexedDB.open(dbName); r.onsuccess=()=>{r.result.transaction('reports','readwrite').objectStore('reports').delete('latest').onsuccess=()=>resolve()} }); results.innerHTML = ''; feedback('Local report cleared. Your selected source files were never stored.') }
-function toggleTheme(){ document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? '' : 'dark' }
-async function restoreLicense(){ const value = $('#license') as HTMLInputElement; if (!value.value.trim()) return; localStorage.setItem('sb_license:message-archive-audit', value.value.trim()); await verifyLicense(value.value.trim()) }
-async function verifyLicense(token: string | null) { const state = document.querySelector('#license-state'); if (!token || !state) return; const old = localStorage.getItem('sb_license_verdict:message-archive-audit'); if (old) { const cached = JSON.parse(old); if (Date.now() - cached.at < 86400000) { state.textContent = cached.valid ? 'License restored.' : 'License no longer active.'; return } } state.textContent = 'Checking license…'; try { const r = await fetch(`https://api.sociobot.in/api/v1/products/message-archive-audit/verify?license=${encodeURIComponent(token)}`); const v = await r.json(); localStorage.setItem('sb_license_verdict:message-archive-audit', JSON.stringify({valid:!!v.valid,at:Date.now()})); state.textContent = v.valid ? 'License restored.' : 'License no longer active. You can purchase a new upgrade anytime.' } catch { state.textContent = 'License will be checked when you are online.' } }
+function download(name: string, content: string, type: string) {
+  const url = URL.createObjectURL(new Blob([content], { type }))
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = name
+  anchor.click()
+  setTimeout(() => URL.revokeObjectURL(url), 2_000)
+}
 
-app(); dbGet().then(saved => { if (saved) { report = saved; renderReport(); announce.textContent = 'Saved local audit restored.' } });
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').then(reg => { reg.addEventListener('updatefound', () => { const toast = $('#toast'); toast.hidden = false; toast.innerHTML = `A new offline version is ready. <button>Refresh</button>`; toast.querySelector('button')!.addEventListener('click', () => reg.waiting?.postMessage('skip-waiting')) }); navigator.serviceWorker.addEventListener('controllerchange', () => location.reload()) });
+function feedback(message: string) {
+  results.innerHTML = `<div class="issue" role="alert"><strong>Audit not completed</strong><p>${escapeHtml(message)}</p></div>`
+  announce.textContent = message
+}
+
+async function clearReport() {
+  if (!confirm('Clear this saved audit report? Your source files will not be changed.')) return
+  report = null
+  await dbClear()
+  results.innerHTML = '<div class="good" role="status"><strong>Local report cleared.</strong> Your source files were not stored or changed.</div>'
+  announce.textContent = 'Local report cleared.'
+}
+
+function toggleTheme() {
+  const dark = document.documentElement.dataset.theme !== 'dark'
+  document.documentElement.dataset.theme = dark ? 'dark' : ''
+  const button = $('#theme')
+  button.setAttribute('aria-pressed', String(dark))
+  button.setAttribute('aria-label', dark ? 'Use light color theme' : 'Use dark color theme')
+}
+
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return
+  navigator.serviceWorker.register('/sw.js').then(registration => {
+    registration.addEventListener('updatefound', () => {
+      const worker = registration.installing
+      worker?.addEventListener('statechange', () => {
+        if (worker.state !== 'installed' || !navigator.serviceWorker.controller) return
+        const toast = $('#toast')
+        toast.hidden = false
+        toast.innerHTML = 'An offline update is ready. <button type="button">Refresh now</button>'
+        toast.querySelector('button')!.addEventListener('click', () => {
+          navigator.serviceWorker.addEventListener('controllerchange', () => location.reload(), { once: true })
+          registration.waiting?.postMessage('skip-waiting')
+        })
+      })
+    })
+  }).catch(() => {
+    const toast = $('#toast')
+    toast.hidden = false
+    toast.textContent = 'Offline setup failed. Reload while online to try again.'
+  })
+}
+
+renderApp()
+if (isDemo) {
+  void loadDemo()
+} else {
+  void dbGet().then(saved => {
+    if (!saved) return
+    report = saved
+    renderReport()
+    announce.textContent = 'Saved local audit restored.'
+  })
+}
+registerServiceWorker()
