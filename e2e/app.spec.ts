@@ -371,13 +371,13 @@ test('does not reuse a same-name folder file and inventories every selected fold
   expect(attachmentStatuses).toEqual(expect.arrayContaining(['ambiguous', 'missing']))
 })
 
-test('demo sample has no serious accessibility violations and the ledger is keyboard scrollable', async ({ page }) => {
+test('public routes have no Axe accessibility violations and the ledger is keyboard scrollable', async ({ page }) => {
   await waitForDemo(page)
   for (const route of ['/?demo=1', '/privacy/', '/terms/', '/404.html']) {
     await page.goto(route)
     if (route === '/?demo=1') await expect(page.getByText('Archive inventory complete')).toBeVisible()
     const results = await new AxeBuilder({ page }).analyze()
-    expect(results.violations.filter(violation => ['serious', 'critical'].includes(violation.impact || '')), route).toEqual([])
+    expect(results.violations, route).toEqual([])
   }
   await page.goto('/?demo=1')
   await expect(page.getByText('Archive inventory complete')).toBeVisible()
