@@ -23,4 +23,12 @@ See [polish-2.md](polish-2.md) for the finding-by-finding mapping.
 
 ## Deployment and final live check
 
-Pending the final push/deployment step for commit `053b5a12893c27c8793b3abd7c0d26c12739840c`; append the deployed URL evidence after the static work-order deployment completes.
+- Pushed: `e059ae48f20ba3d929d90e0488a18d5552025b5b` on `main` (repair code is `80e46b4` and `053b5a1`).
+- Deployed through `/opt/fleet/lib/deploy-static.sh message-archive-audit /work/repo/dist`; Azure deployment `c11c57d6-8467-4d54-81c0-f3788d0dbed4` completed successfully.
+- Cold live demo: [desktop screenshot](evidence/polish-2-live/screenshot-desktop.png), [mobile screenshot](evidence/polish-2-live/screenshot-mobile.png), and [route check](evidence/polish-2-live/verify.json). It reports no console errors, title `Demo — Archive Audit`, `lang=en`, one h1, main landmark, and image alt text.
+- Fresh 390px live check confirmed the sticky demo banner, completed results in the viewport, metrics `4 / 2 / 2 / 0`, exact `/demo` canonical/OG/Twitter metadata, `File storage and audit limits`, and Privacy h1 focus with `Privacy — Archive Audit` announcement.
+- `GET https://message-archive-audit.sociobot.in/missing-polish-2` returned HTTP 404 and the designed `Page not found` page. Live Terms includes the encrypted-mail/provider boundary and build `repair-6`.
+
+## Known gaps
+
+None.
