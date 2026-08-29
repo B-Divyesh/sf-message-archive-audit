@@ -1,4 +1,4 @@
-HTTP/2 200 
+HTTP/2 200
 content-type: text/xml
 date: Sat, 29 Aug 2026 20:16:10 GMT
 cache-control: public, must-revalidate, max-age=30
@@ -13,4 +13,3 @@ x-dns-prefetch-control: off
 content-security-policy: default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'
 permissions-policy: camera=(), geolocation=(), microphone=(), payment=(), usb=()
 x-frame-options: DENY
-

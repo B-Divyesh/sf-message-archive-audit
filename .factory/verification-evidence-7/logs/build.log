@@ -1,0 +1,13 @@
+
+> message-archive-audit@1.0.0 build
+> tsc -b && vite build
+
+vite v6.4.3 building for production...
+transforming...
+✓ 7 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  1.78 kB │ gzip: 0.61 kB
+dist/assets/index-DhpJzuom.css   9.60 kB │ gzip: 2.96 kB
+dist/assets/index-BdmCWYZZ.js   23.24 kB │ gzip: 8.78 kB
+✓ built in 279ms

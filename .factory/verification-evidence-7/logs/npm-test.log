@@ -1,0 +1,15 @@
+
+> message-archive-audit@1.0.0 test
+> vitest run
+
+
+ RUN  v3.2.7 /work/repo
+
+ ✓ src/exports.test.ts (4 tests) 77ms
+ ✓ src/config.test.ts (2 tests) 4ms
+ ✓ src/parser.test.ts (14 tests) 56ms
+
+ Test Files  3 passed (3)
+      Tests  20 passed (20)
+   Start at  20:07:05
+   Duration  1.69s (transform 571ms, setup 0ms, collect 868ms, tests 137ms, environment 1ms, prepare 1.24s)
