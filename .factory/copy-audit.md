@@ -43,6 +43,18 @@ The first screen states the job, names the person facing lost access, and gives 
 | It cannot prove that a provider included every message. | 9 |
 | Check email exports before account or device access ends. | 9 |
 
+## Audit results
+
+| Copy | Words |
+| --- | ---: |
+| Check attachment inventory | 3 |
+| Duplicate name; match is not unique | 6 |
+| Missing from folder | 3 |
+| Selected folder inventory | 3 |
+| Matched to one message attachment | 5 |
+| Not referenced by a message attachment | 6 |
+| Review duplicate names, choose any missing files, or retain these findings in the receipt. | 14 |
+
 ## Terminology
 
 | Concept | One term |

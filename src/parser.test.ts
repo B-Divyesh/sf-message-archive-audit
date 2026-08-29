@@ -41,6 +41,20 @@ describe('email parser', () => {
     expect(message.attachments[0]).toMatchObject({ name: 'field note.txt', size: 12, status: 'verified' })
   })
 
+  it('joins and decodes RFC 2231 continued attachment filenames', async () => {
+    const message = await parseEml(envelope("Content-Type: application/pdf\r\nContent-Disposition: attachment;\r\n filename*0*=UTF-8''quarterly%20;\r\n filename*1*=report.pdf\r\nContent-Transfer-Encoding: base64\r\n\r\ncHJvb2Y="))
+    expect(message.attachments).toEqual([{
+      name: 'quarterly report.pdf', source: 'embedded', size: 5,
+      hash: 'c1cda26362828b69266512052b97cb3729e3b052e4ade47c0a1e3383defe73c7', status: 'verified',
+    }])
+  })
+
+  it('decodes UTF-8 RFC 2047 Q-encoded subject and sender text', async () => {
+    const message = await parseEml('From: =?UTF-8?Q?Jos=C3=A9_Archive?= <jose@example.test>\r\nSubject: =?UTF-8?Q?Caf=C3=A9_receipt?=\r\nDate: Tue, 02 Jan 2024 10:00:00 +0000\r\n\r\nBody')
+    expect(message.subject).toBe('Café receipt')
+    expect(message.from).toBe('José Archive <jose@example.test>')
+  })
+
   it('retains malformed percent escapes as a readable filename', async () => {
     const message = await parseEml(envelope("Content-Type: text/plain\r\nContent-Disposition: attachment; filename*=UTF-8''bad%ZZ.txt\r\n\r\ndata"))
     expect(message.attachments[0].name).toBe('bad%ZZ.txt')
@@ -58,7 +72,30 @@ describe('email parser', () => {
 
   it('adds the exact supplied-folder hash to a matched reference', async () => {
     const message = await parseEml(envelope('Content-Type: application/pdf; name="record.pdf"\r\nContent-Disposition: attachment; filename="record.pdf"\r\n\r\n'))
-    reconcile([message], [{ name: 'record.pdf', size: 4, hash: 'folder-hash' }])
+    const files = [{ name: 'record.pdf', path: 'attachments/record.pdf', size: 4, hash: 'folder-hash', status: 'unmatched' as const }]
+    reconcile([message], files)
     expect(message.attachments[0]).toEqual({ name: 'record.pdf', source: 'reference', size: 4, hash: 'folder-hash', status: 'found' })
+    expect(files[0].status).toBe('matched')
+  })
+
+  it('consumes one physical file only once for duplicate-name references', async () => {
+    const first = await parseEml(envelope('Content-Type: application/pdf; name="invoice.pdf"\r\nContent-Disposition: attachment; filename="invoice.pdf"\r\n\r\n'))
+    const second = await parseEml(envelope('Content-Type: application/pdf; name="invoice.pdf"\r\nContent-Disposition: attachment; filename="invoice.pdf"\r\n\r\n'))
+    const files = [{ name: 'invoice.pdf', path: 'attachments/invoice.pdf', size: 8, hash: 'one-physical-file', status: 'unmatched' as const }]
+
+    reconcile([first, second], files)
+
+    expect([first.attachments[0].status, second.attachments[0].status]).toEqual(['ambiguous', 'missing'])
+    expect([first.attachments[0].hash, second.attachments[0].hash]).toEqual(['one-physical-file', undefined])
+    expect(files[0].status).toBe('ambiguous')
+  })
+
+  it('preserves folder-relative paths and leaves unreferenced files in the inventory', async () => {
+    const message = await parseEml('From: A <a@example.test>\r\nSubject: Plain message\r\n\r\nBody')
+    const files = [{ name: 'photo.jpg', path: 'export/photos/photo.jpg', size: 5, hash: 'photo-hash', status: 'matched' as const }]
+
+    reconcile([message], files)
+
+    expect(files).toEqual([{ name: 'photo.jpg', path: 'export/photos/photo.jpg', size: 5, hash: 'photo-hash', status: 'unmatched' }])
   })
 })

@@ -29,4 +29,25 @@ describe('portable receipts', () => {
     expect(csv).toContain('"\'-date"')
     expect(csv).toContain('"\'+file.txt"')
   })
+
+  it('includes every selected folder file and reconciliation state in HTML and CSV', () => {
+    const folderReport: ArchiveReport = {
+      ...report,
+      folderFiles: [
+        { name: 'record.pdf', path: 'export/invoices/record.pdf', size: 4, hash: 'matched-hash', status: 'matched' },
+        { name: 'photo.jpg', path: 'export/photos/photo.jpg', size: 5, hash: 'orphan-hash', status: 'unmatched' },
+        { name: 'invoice.pdf', path: 'export/duplicate/invoice.pdf', size: 8, hash: 'ambiguous-hash', status: 'ambiguous' },
+      ],
+    }
+    const html = reportHtml(folderReport)
+    const csv = reportCsv(folderReport)
+
+    for (const expected of ['export/invoices/record.pdf', 'export/photos/photo.jpg', 'export/duplicate/invoice.pdf', 'matched-hash', 'orphan-hash', 'ambiguous-hash']) {
+      expect(html).toContain(expected)
+      expect(csv).toContain(expected)
+    }
+    expect(html).toContain('Matched to one message attachment')
+    expect(html).toContain('Not referenced by a message attachment')
+    expect(html).toContain('Duplicate name; match is not unique')
+  })
 })

@@ -1,12 +1,12 @@
 import './style.css'
 import './hero.css'
-import { escapeHtml, receiptRows, reportCsv, reportHtml } from './exports'
+import { escapeHtml, folderFileStatusLabel, receiptRows, reportCsv, reportHtml } from './exports'
 import { parseMailFile, reconcile, sha256 } from './parser'
-import type { ArchiveReport } from './types'
+import type { ArchiveReport, FolderFile } from './types'
 
 const isDemo = location.pathname.replace(/\/$/, '') === '/demo' || new URLSearchParams(location.search).get('demo') === '1'
 const databaseName = 'archive-audit'
-const buildId = 'repair-4'
+const buildId = 'repair-5'
 
 let report: ArchiveReport | null = null
 let mailInput: HTMLInputElement
@@ -67,6 +67,29 @@ async function dbClear() {
     request.onsuccess = () => resolve()
     request.onerror = () => reject(request.error)
   })
+}
+
+function issuesFor(messages: ArchiveReport['messages'], folderFiles: FolderFile[]) {
+  const references = messages.flatMap(message => message.attachments).filter(attachment => attachment.source === 'reference')
+  const missing = references.filter(attachment => attachment.status === 'missing').length
+  const ambiguous = folderFiles.filter(file => file.status === 'ambiguous').length
+  const unmatched = folderFiles.filter(file => file.status === 'unmatched').length
+  const issues: string[] = []
+  if (missing) issues.push(`${plural(missing, 'attachment reference')} could not be matched to a separate folder file.`)
+  if (ambiguous) issues.push(`${plural(ambiguous, 'selected folder file')} ${ambiguous === 1 ? 'has' : 'have'} duplicate-name matches and cannot be linked uniquely.`)
+  if (unmatched) issues.push(`${plural(unmatched, 'selected folder file')} ${unmatched === 1 ? 'was' : 'were'} not referenced by a named message attachment.`)
+  return issues
+}
+
+function normalizeReport(saved: ArchiveReport) {
+  saved.folderFiles = (saved.folderFiles || []).map(file => ({
+    ...file,
+    path: file.path || file.name,
+    status: file.status || 'unmatched',
+  }))
+  reconcile(saved.messages, saved.folderFiles)
+  saved.issues = issuesFor(saved.messages, saved.folderFiles)
+  return saved
 }
 
 function header() {
@@ -138,21 +161,24 @@ async function audit() {
   results.innerHTML = `<div class="working"><span aria-hidden="true"></span>Reading ${plural(mails.length, 'export')} on this device…</div>`
   announce.textContent = 'Audit in progress'
   try {
-    const folderFiles = await Promise.all([...(folderInput.files || [])].map(async file => ({
-      name: file.name, size: file.size, hash: await sha256(await file.arrayBuffer()),
+    const folderFiles: FolderFile[] = await Promise.all([...(folderInput.files || [])].map(async file => ({
+      name: file.name,
+      path: file.webkitRelativePath || file.name,
+      size: file.size,
+      hash: await sha256(await file.arrayBuffer()),
+      status: 'unmatched' as const,
     })))
     const messageGroups = await Promise.all(mails.map(parseMailFile))
     const messages = messageGroups.flat()
     if (!messages.length) throw new Error('No valid messages were found.')
     reconcile(messages, folderFiles)
-    const missing = messages.flatMap(message => message.attachments).filter(attachment => attachment.status === 'missing').length
     report = {
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
       sources: mails.map(file => file.name),
       messages,
       folderFiles,
-      issues: missing ? [`${plural(missing, 'attachment reference')} could not be found in the supplied folder.`] : [],
+      issues: issuesFor(messages, folderFiles),
     }
     await dbSave(report)
     renderReport()
@@ -193,20 +219,24 @@ async function loadDemo() {
 function statusLabel(status: string) {
   if (status === 'verified') return 'Embedded and hashed'
   if (status === 'found') return 'Found separately and hashed'
+  if (status === 'ambiguous') return 'Duplicate name; match is not unique'
   return 'Missing from folder'
 }
 
 function renderReport() {
   if (!report) return
   const attachments = report.messages.flatMap(message => message.attachments)
-  const hashed = attachments.filter(attachment => attachment.hash).length
+  const hashed = attachments.filter(attachment => attachment.source === 'embedded' && attachment.hash).length + report.folderFiles.length
   const missing = attachments.filter(attachment => attachment.status === 'missing').length
   const rows = receiptRows(report).map(({ message, attachment }) => `<tr><td><b>${escapeHtml(message.subject)}</b><small>${escapeHtml(message.from)} · ${escapeHtml(message.date)}</small></td><td>${attachment ? `${escapeHtml(attachment.name)}<small>${attachment.size == null ? 'No readable bytes' : `${attachment.size.toLocaleString()} bytes`}</small>` : '—'}</td><td>${attachment ? `<span class="status ${attachment.status}">${statusLabel(attachment.status)}</span>` : '<span class="status">No attachment</span>'}</td><td class="hash">${escapeHtml(attachment?.hash || '—')}</td></tr>`).join('')
-  results.innerHTML = `<div class="receipt-head"><div><p class="eyebrow">Audit receipt</p><h2>${missing ? 'Check missing attachment references' : 'Archive inventory complete'}</h2><p class="quiet-copy">Created ${new Date(report.createdAt).toLocaleString()} · ${isDemo ? 'demo audit summary not saved' : 'local audit summary saved on this device'}</p></div><div class="stamp ${missing ? 'warn' : ''}">${missing ? 'CHECK GAPS' : 'INVENTORIED'}<small>local record</small></div></div>
+  const needsReview = report.issues.length > 0
+  const folderRows = report.folderFiles.map(file => `<tr><td><b>${escapeHtml(file.path)}</b><small>${file.size.toLocaleString()} bytes</small></td><td><span class="status ${file.status}">${escapeHtml(folderFileStatusLabel(file))}</span></td><td class="hash">${escapeHtml(file.hash)}</td></tr>`).join('')
+  const folderLedger = report.folderFiles.length ? `<details class="ledger" open><summary>Selected folder inventory — ${plural(report.folderFiles.length, 'file')}</summary><div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable selected folder inventory"><table><thead><tr><th>Folder path</th><th>Status</th><th>SHA-256</th></tr></thead><tbody>${folderRows}</tbody></table></div></details>` : ''
+  results.innerHTML = `<div class="receipt-head"><div><p class="eyebrow">Audit receipt</p><h2>${needsReview ? 'Check attachment inventory' : 'Archive inventory complete'}</h2><p class="quiet-copy">Created ${new Date(report.createdAt).toLocaleString()} · ${isDemo ? 'demo audit summary not saved' : 'local audit summary saved on this device'}</p></div><div class="stamp ${needsReview ? 'warn' : ''}">${needsReview ? 'CHECK ITEMS' : 'INVENTORIED'}<small>local record</small></div></div>
     <div class="metrics"><div><b>${report.messages.length}</b><span>messages</span></div><div><b>${attachments.length}</b><span>attachments named</span></div><div><b>${hashed}</b><span>attachments hashed</span></div><div><b>${missing}</b><span>references missing</span></div></div>
-    ${report.issues.length ? `<div class="issue" role="status"><strong>Attention needed</strong><p>${report.issues.map(escapeHtml).join(' ')}</p><p>Choose the attachment folder and audit again, or retain this finding in the receipt.</p></div>` : `<div class="good"><strong>No broken attachment references found.</strong> Readable embedded attachments were hashed on this device.</div>`}
+    ${report.issues.length ? `<div class="issue" role="status"><strong>Attention needed</strong><p>${report.issues.map(escapeHtml).join(' ')}</p><p>Review duplicate names, choose any missing files, or retain these findings in the receipt.</p></div>` : `<div class="good"><strong>No broken attachment references found.</strong> Readable embedded and selected folder files were hashed on this device.</div>`}
     <div class="report-actions"><button id="html" class="primary" type="button">Save HTML receipt</button><button id="csv" class="quiet" type="button">Export CSV</button><button id="json" class="quiet" type="button">Export JSON</button>${isDemo ? '' : '<button id="clear" class="quiet danger" type="button">Clear local report</button>'}</div>
-    <details class="ledger" open><summary>Message ledger — ${plural(report.messages.length, 'message')}</summary><div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable message ledger"><table><thead><tr><th>Message</th><th>Attachment</th><th>Status</th><th>SHA-256</th></tr></thead><tbody>${rows}</tbody></table></div></details>`
+    <details class="ledger" open><summary>Message ledger — ${plural(report.messages.length, 'message')}</summary><div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable message ledger"><table><thead><tr><th>Message</th><th>Attachment</th><th>Status</th><th>SHA-256</th></tr></thead><tbody>${rows}</tbody></table></div></details>${folderLedger}`
   $('#html').addEventListener('click', () => download('archive-audit-receipt.html', reportHtml(report!), 'text/html'))
   $('#csv').addEventListener('click', () => download('archive-audit.csv', reportCsv(report!), 'text/csv'))
   $('#json').addEventListener('click', () => download('archive-audit.json', JSON.stringify(report, null, 2), 'application/json'))
@@ -279,7 +309,7 @@ if (isDemo) {
     if (!hasDatabase) return
     const saved = await dbGet()
     if (!saved) return
-    report = saved
+    report = normalizeReport(saved)
     renderReport()
     announce.textContent = 'Saved local audit summary restored.'
   })

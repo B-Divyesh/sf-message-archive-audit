@@ -3,7 +3,15 @@ export type Attachment = {
   source: 'embedded' | 'reference'
   size: number | null
   hash?: string
-  status: 'verified' | 'missing' | 'found'
+  status: 'verified' | 'missing' | 'found' | 'ambiguous'
+}
+
+export type FolderFile = {
+  name: string
+  path: string
+  size: number
+  hash: string
+  status: 'matched' | 'unmatched' | 'ambiguous'
 }
 
 export type Message = {
@@ -18,6 +26,6 @@ export type ArchiveReport = {
   createdAt: string
   sources: string[]
   messages: Message[]
-  folderFiles: Array<{ name: string; size: number; hash: string }>
+  folderFiles: FolderFile[]
   issues: string[]
 }

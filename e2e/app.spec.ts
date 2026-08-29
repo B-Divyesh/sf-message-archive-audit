@@ -42,6 +42,17 @@ test('@claim:mime-audit audits EML and MBOX plus base64 and 7-bit attachments', 
   const nestedRow = page.locator('tbody tr').filter({ hasText: 'evidence.pdf' })
   await expect(nestedRow).toContainText('5 bytes')
   await expect(nestedRow).toContainText('c1cda26362828b69266512052b97cb3729e3b052e4ade47c0a1e3383defe73c7')
+
+  const standardsFixture = `From: =?UTF-8?Q?Jos=C3=A9_Archive?= <jose@example.test>\r\nSubject: =?UTF-8?Q?Caf=C3=A9_receipt?=\r\nDate: Tue, 02 Jan 2024 10:00:00 +0000\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=x\r\n\r\n--x\r\nContent-Type: text/plain\r\n\r\nBody\r\n--x\r\nContent-Type: application/pdf\r\nContent-Disposition: attachment;\r\n filename*0*=UTF-8''quarterly%20;\r\n filename*1*=report.pdf\r\nContent-Transfer-Encoding: base64\r\n\r\ncHJvb2Y=\r\n--x--\r\n`
+  await page.locator('#mail-files').setInputFiles({
+    name: 'standards.eml', mimeType: 'message/rfc822', buffer: Buffer.from(standardsFixture),
+  })
+  await page.getByRole('button', { name: 'Audit selected files' }).click()
+  const standardsRow = page.locator('tbody tr').filter({ hasText: 'quarterly report.pdf' })
+  await expect(standardsRow).toContainText('5 bytes')
+  await expect(standardsRow).toContainText('c1cda26362828b69266512052b97cb3729e3b052e4ade47c0a1e3383defe73c7')
+  await expect(standardsRow).toContainText('Café receipt')
+  await expect(standardsRow).toContainText('José Archive')
 })
 
 test('@claim:local-only keeps the complete demo flow on-origin and out of real storage', async ({ page }) => {
@@ -92,6 +103,25 @@ test('@claim:receipt-exports exports complete HTML, CSV, and JSON receipts', asy
   const json = JSON.parse(await readFile(await jsonDownload[0].path(), 'utf8'))
   expect(json.messages).toHaveLength(4)
   expect(json.messages.some((message: { attachments: unknown[] }) => message.attachments.length === 0)).toBe(true)
+
+  await page.goto('/')
+  await page.locator('#mail-files').setInputFiles({
+    name: 'folder-inventory.eml', mimeType: 'message/rfc822', buffer: Buffer.from(validEml('Folder inventory')),
+  })
+  await page.locator('#attachment-files').evaluate((input: HTMLInputElement) => {
+    const transfer = new DataTransfer()
+    const orphan = new File(['photo'], 'orphan-photo.jpg', { type: 'image/jpeg' })
+    Object.defineProperty(orphan, 'webkitRelativePath', { value: 'attachments/photos/orphan-photo.jpg' })
+    transfer.items.add(orphan)
+    input.files = transfer.files
+  })
+  await page.getByRole('button', { name: 'Audit selected files' }).click()
+  for (const [button, format] of [['Save HTML receipt', 'html'], ['Export CSV', 'csv'], ['Export JSON', 'json']] as const) {
+    const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: button }).click()])
+    const content = await readFile(await download.path(), 'utf8')
+    expect(content, format).toContain('attachments/photos/orphan-photo.jpg')
+    expect(content, format).toContain(format === 'json' ? '"status": "unmatched"' : 'Not referenced by a message attachment')
+  }
 })
 
 test('@claim:report-persistence restores a real report without storing source bodies', async ({ page }) => {
@@ -167,7 +197,7 @@ test('exports a supplied-folder hash and neutralizes spreadsheet formulas', asyn
   await page.getByRole('button', { name: 'Audit selected files' }).click()
   await expect(page.getByText('Found separately and hashed')).toBeVisible()
   const expectedHash = createHash('sha256').update('folder bytes').digest('hex')
-  await expect(page.getByText(expectedHash)).toBeVisible()
+  await expect(page.getByText(expectedHash).first()).toBeVisible()
 
   const csvDownload = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Export CSV' }).click()])
   const csv = await readFile(await csvDownload[0].path(), 'utf8')
@@ -177,6 +207,55 @@ test('exports a supplied-folder hash and neutralizes spreadsheet formulas', asyn
 
   const htmlDownload = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Save HTML receipt' }).click()])
   expect(await readFile(await htmlDownload[0].path(), 'utf8')).toContain(expectedHash)
+})
+
+test('does not reuse a same-name folder file and inventories every selected folder file', async ({ page }) => {
+  const referenced = (subject: string) => `From: Archive <archive@example.test>\nSubject: ${subject}\nDate: Tue, 02 Jan 2024 10:00:00 +0000\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary=x\n\n--x\nContent-Type: text/plain\n\nBody\n--x\nContent-Type: application/pdf; name="invoice.pdf"\nContent-Disposition: attachment; filename="invoice.pdf"\n\n\n--x--`
+  const plain = validEml('Folder inventory')
+  await page.goto('/')
+  await page.locator('#mail-files').setInputFiles([
+    { name: 'first.eml', mimeType: 'message/rfc822', buffer: Buffer.from(referenced('First invoice')) },
+    { name: 'second.eml', mimeType: 'message/rfc822', buffer: Buffer.from(referenced('Second invoice')) },
+    { name: 'plain.eml', mimeType: 'message/rfc822', buffer: Buffer.from(plain) },
+  ])
+  await page.locator('#attachment-files').evaluate((input: HTMLInputElement) => {
+    const transfer = new DataTransfer()
+    const invoice = new File(['only one'], 'invoice.pdf', { type: 'application/pdf' })
+    const orphan = new File(['photo'], 'orphan-photo.jpg', { type: 'image/jpeg' })
+    Object.defineProperty(invoice, 'webkitRelativePath', { value: 'attachments/invoice.pdf' })
+    Object.defineProperty(orphan, 'webkitRelativePath', { value: 'attachments/photos/orphan-photo.jpg' })
+    transfer.items.add(invoice)
+    transfer.items.add(orphan)
+    input.files = transfer.files
+  })
+  await page.getByRole('button', { name: 'Audit selected files' }).click()
+
+  await expect(page.getByRole('heading', { name: 'Check attachment inventory' })).toBeVisible()
+  const invoiceRows = page.locator('details.ledger').first().locator('tbody tr').filter({ hasText: 'invoice.pdf' })
+  await expect(invoiceRows).toHaveCount(2)
+  await expect(invoiceRows.filter({ hasText: 'Duplicate name; match is not unique' })).toHaveCount(1)
+  await expect(invoiceRows.filter({ hasText: 'Missing from folder' })).toHaveCount(1)
+  await expect(page.getByText('attachments/photos/orphan-photo.jpg', { exact: true })).toBeVisible()
+  await expect(page.getByText('Not referenced by a message attachment', { exact: true })).toBeVisible()
+  await expect(page.locator('.metrics > div').filter({ hasText: 'attachments hashed' }).locator('b')).toHaveText('2')
+
+  const downloads: Record<string, string> = {}
+  for (const [button, key] of [['Save HTML receipt', 'html'], ['Export CSV', 'csv'], ['Export JSON', 'json']] as const) {
+    const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: button }).click()])
+    downloads[key] = await readFile(await download.path(), 'utf8')
+  }
+  for (const format of ['html', 'csv']) {
+    expect(downloads[format]).toContain('attachments/photos/orphan-photo.jpg')
+    expect(downloads[format]).toContain('Not referenced by a message attachment')
+    expect(downloads[format]).toContain('Duplicate name; match is not unique')
+  }
+  const json = JSON.parse(downloads.json)
+  expect(json.folderFiles).toEqual(expect.arrayContaining([
+    expect.objectContaining({ path: 'attachments/invoice.pdf', status: 'ambiguous' }),
+    expect.objectContaining({ path: 'attachments/photos/orphan-photo.jpg', status: 'unmatched' }),
+  ]))
+  const attachmentStatuses = json.messages.flatMap((message: { attachments: Array<{ status: string }> }) => message.attachments.map(attachment => attachment.status))
+  expect(attachmentStatuses).toEqual(expect.arrayContaining(['ambiguous', 'missing']))
 })
 
 test('demo sample has no serious accessibility violations and the ledger is keyboard scrollable', async ({ page }) => {

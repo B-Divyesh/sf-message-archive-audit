@@ -2,7 +2,7 @@
 
 Archive Audit checks email exports before account or device access ends. It is for people who need a clear record of saved messages and attachments.
 
-It reads EML message files and MBOX email collections in the browser. It counts messages and checks named attachment files. It hashes readable attachments as file hashes (SHA-256). It exports HTML, CSV, and JSON receipts. Messages without attachments remain in every receipt.
+It reads EML message files and MBOX email collections in the browser. It counts messages and checks named attachment files. It hashes readable attachments as file hashes (SHA-256). Every selected folder file remains visible with its relative path and match status. It exports HTML, CSV, and JSON receipts. Messages without attachments remain in every receipt.
 
 Message and attachment bytes stay on the device. A real audit stores a local audit summary in browser storage (IndexedDB). That summary survives reload until cleared. The complete audit and every receipt format are free and need no account. The installed app works offline after the first visit.
 

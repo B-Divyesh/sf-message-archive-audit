@@ -1,16 +1,37 @@
-import type { Attachment, Message } from './types'
+import type { Attachment, FolderFile, Message } from './types'
+
+function decodeBytes(bytes: Uint8Array, charset: string) {
+  try {
+    return new TextDecoder(charset.trim() || 'utf-8').decode(bytes)
+  } catch {
+    return new TextDecoder().decode(bytes)
+  }
+}
+
+function decodeQWord(data: string, charset: string) {
+  const bytes: number[] = []
+  for (let index = 0; index < data.length; index += 1) {
+    const hex = data.slice(index + 1, index + 3)
+    if (data[index] === '=' && /^[0-9A-F]{2}$/i.test(hex)) {
+      bytes.push(parseInt(hex, 16))
+      index += 2
+    } else {
+      bytes.push(data[index] === '_' ? 32 : data.charCodeAt(index) & 0xff)
+    }
+  }
+  return decodeBytes(new Uint8Array(bytes), charset)
+}
 
 const decodeHeader = (value = '') => value
-  .replace(/=\?([^?]+)\?[bB]\?([^?]+)\?=/g, (_, charset, data) => {
+  .replace(/(\?=)[ \t\r\n]+(?==\?)/g, '$1')
+  .replace(/=\?([^?]+)\?([bBqQ])\?([^?]*)\?=/g, (_, charset, encoding, data) => {
     try {
-      return new TextDecoder(charset).decode(Uint8Array.from(atob(data), character => character.charCodeAt(0)))
+      if (encoding.toLowerCase() === 'q') return decodeQWord(data, charset)
+      return decodeBytes(Uint8Array.from(atob(data), character => character.charCodeAt(0)), charset)
     } catch {
       return data
     }
   })
-  .replace(/=\?([^?]+)\?[qQ]\?([^?]+)\?=/g, (_, _charset, data) => data
-    .replace(/_/g, ' ')
-    .replace(/=([0-9A-F]{2})/gi, (_match: string, hex: string) => String.fromCharCode(parseInt(hex, 16))))
 
 export const sha256 = async (data: ArrayBuffer | Uint8Array) => {
   const hash = await crypto.subtle.digest('SHA-256', data)
@@ -18,24 +39,45 @@ export const sha256 = async (data: ArrayBuffer | Uint8Array) => {
 }
 
 function header(block: string, key: string) {
-  const match = block.match(new RegExp(`^${key}:\\s*([\\s\\S]*?)(?=\\r?\\n[^ \\t]|$)`, 'im'))
+  const match = block.match(new RegExp(`(?:^|\\r?\\n)${key}:\\s*([\\s\\S]*?)(?=\\r?\\n[^ \\t]|$)`, 'i'))
   return decodeHeader((match?.[1] || '').replace(/\r?\n[ \t]+/g, ' ').trim())
 }
 
-function safeDecodeFilename(value: string) {
-  const cleaned = value.trim().replace(/^"|"$/g, '').replace(/\\(["\\])/g, '$1')
-  const encoded = cleaned.match(/^[^']*'[^']*'(.*)$/)?.[1] ?? cleaned
-  try {
-    return decodeURIComponent(encoded)
-  } catch {
-    return encoded
+function decodeExtendedParameter(value: string) {
+  const extended = value.match(/^([^']*)'[^']*'(.*)$/)
+  const charset = extended?.[1] || 'utf-8'
+  const encoded = extended?.[2] ?? value
+  const bytes: number[] = []
+  for (let index = 0; index < encoded.length; index += 1) {
+    const hex = encoded.slice(index + 1, index + 3)
+    if (encoded[index] === '%' && /^[0-9A-F]{2}$/i.test(hex)) {
+      bytes.push(parseInt(hex, 16))
+      index += 2
+    } else {
+      bytes.push(...new TextEncoder().encode(encoded[index]))
+    }
   }
+  return decodeBytes(new Uint8Array(bytes), charset)
 }
 
 function parameter(headerValue: string, name: string) {
-  const match = headerValue.match(new RegExp(`(?:^|;)\\s*${name}(\\*)?\\s*=\\s*(?:"((?:\\\\.|[^"])*)"|([^;\\r\\n]*))`, 'i'))
-  if (!match) return ''
-  return safeDecodeFilename(match[2] ?? match[3] ?? '')
+  const parameters = new Map<string, string>()
+  const expression = /(?:^|;)\s*([!#$%&'*+.^_`|~0-9A-Za-z-]+)\s*=\s*(?:"((?:\\.|[^"])*)"|([^;\r\n]*))/g
+  for (const match of headerValue.matchAll(expression)) {
+    parameters.set(match[1].toLowerCase(), (match[2] ?? match[3] ?? '').trim().replace(/\\(["\\])/g, '$1'))
+  }
+
+  const key = name.toLowerCase()
+  const continuation = [...parameters.entries()].flatMap(([parameterName, value]) => {
+    const match = parameterName.match(new RegExp(`^${key}\\*(\\d+)(\\*)?$`, 'i'))
+    return match ? [{ index: Number(match[1]), encoded: Boolean(match[2]), value }] : []
+  }).sort((left, right) => left.index - right.index)
+  if (continuation.length && continuation[0].index === 0 && continuation.every((part, index) => part.index === index)) {
+    const combined = continuation.map(part => part.value).join('')
+    return continuation.some(part => part.encoded) ? decodeExtendedParameter(combined) : combined
+  }
+  if (parameters.has(`${key}*`)) return decodeExtendedParameter(parameters.get(`${key}*`)!)
+  return parameters.get(key) ?? ''
 }
 
 function decodeQuotedPrintable(body: string) {
@@ -154,16 +196,39 @@ export async function parseMailFile(file: File): Promise<Message[]> {
   return [await parseEml(raw)]
 }
 
-export function reconcile(messages: Message[], files: Array<{ name: string; size: number; hash: string }>) {
-  for (const item of messages.flatMap(message => message.attachments)) {
-    if (item.source === 'embedded') continue
-    const matches = files.filter(file => file.name === item.name)
-    if (matches.length === 1) {
-      item.status = 'found'
-      item.size = matches[0].size
-      item.hash = matches[0].hash
-    } else {
-      item.status = 'missing'
+export function reconcile(messages: Message[], files: FolderFile[]) {
+  const references = messages.flatMap(message => message.attachments).filter(item => item.source === 'reference')
+  for (const reference of references) {
+    reference.status = 'missing'
+    reference.size = null
+    delete reference.hash
+  }
+  for (const file of files) file.status = 'unmatched'
+
+  const names = new Set([...references.map(reference => reference.name), ...files.map(file => file.name)])
+  for (const name of names) {
+    const namedReferences = references.filter(reference => reference.name === name)
+    const namedFiles = files.filter(file => file.name === name)
+    if (namedReferences.length === 1 && namedFiles.length === 1) {
+      const [reference] = namedReferences
+      const [file] = namedFiles
+      reference.status = 'found'
+      reference.size = file.size
+      reference.hash = file.hash
+      file.status = 'matched'
+      continue
+    }
+
+    const assignments = Math.min(namedReferences.length, namedFiles.length)
+    for (let index = 0; index < assignments; index += 1) {
+      const reference = namedReferences[index]
+      const file = namedFiles[index]
+      reference.status = 'ambiguous'
+      reference.size = file.size
+      reference.hash = file.hash
+    }
+    if (namedReferences.length && namedFiles.length) {
+      for (const file of namedFiles) file.status = 'ambiguous'
     }
   }
 }

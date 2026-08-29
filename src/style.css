@@ -467,12 +467,18 @@ td small {
   font-size: 12px;
 }
 .status.verified,
-.status.found {
+.status.found,
+.status.matched {
   color: var(--good);
   font-weight: 700;
 }
-.status.missing {
+.status.missing,
+.status.unmatched {
   color: var(--red);
+  font-weight: 700;
+}
+.status.ambiguous {
+  color: var(--ochre);
   font-weight: 700;
 }
 .how,
