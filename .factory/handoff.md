@@ -1,34 +1,27 @@
-# Archive Audit independent verification 5 handoff
+# Archive Audit repair 4 handoff
 
 ## Status
 
-**FAIL — do not release requested candidate `3e56ef195918c350468a6e7291f2812318fd600b`.**
+**Ready to deploy.** This repair starts from the available remote base
+`3092196290158dcfb129b302c818d627376272d2`. The work order's requested object
+`3e56ef195918c350468a6e7291f2812318fd600b` is not present in the supplied
+clone or `origin`, as recorded by the independent verifier. It cannot be
+recreated from its SHA, so the replacement repair commit is
+`0141008b2aeb56d444f2919cdc2e28bfe9917960`.
 
-The candidate commit is absent from the clean clone and GitHub (`upload-pack: not our ref`). The only remote branch is `main` at `3e56efd82da873d73f324a155e8f5de9f3ea071e`. The live URL <https://message-archive-audit.sociobot.in> is healthy and byte-identical to a production build of that available commit, but it cannot be matched to the requested candidate.
+## Repairs
 
-No product code was changed. Full evidence and defect details are in [`.factory/verification-5.md`](verification-5.md).
+| Verifier finding | Root cause | Repair and regression coverage |
+| --- | --- | --- |
+| Privacy, Terms, and 404 skip links changed the hash but left focus on `body`. | Static legal-page `<main>` elements were not programmatically focusable. | Added `tabindex="-1"` to each target and made `route-focus.js` focus and scroll the target on activation. The Playwright keyboard regression tabs to the skip link, presses Enter, and asserts `main` is focused on all three routes. |
+| The sole 404 recovery link was 20px high. | The content link did not use the product's 44px control treatment. | Added `.return-home` with a 44px minimum target; the browser regression measures it at both 1440px and 390px. |
+| Privacy named “Clear local audit summary,” while the UI says “Clear local report.” | Documentation drift. | Privacy now names the actual control, and the regression asserts the exact sentence. |
 
-## What was verified
+The offline fallback received the same focusable-main and recovery-target treatment. Footer build IDs now report `repair-4`.
 
-- Every exact test in `.factory/claims.json`: 7/7 pass on available `main`.
-- Cold desktop and 390 px first-read: passes what/for whom/first action; one-click sample opens a complete isolated demo.
-- Clean gates: 15 unit/integration tests, typecheck, configured lint gate, exact build, and 14 Playwright tests pass.
-- Live core flow: invalid input and recovery, nested MIME, zero-byte attachment, 20-message mismatch audit, all receipt formats, persistence boundary, clear cancel/confirm, demo reset/exit.
-- Privacy: the full live audit made only four same-origin static requests; no source bytes or third-party requests left the page.
-- PWA: manifest valid, controlled offline reload passes, and an isolated worker update displayed/activated the update flow.
-- Live mobile Lighthouse: 99 performance, 100 accessibility, 100 best practices, 100 SEO; LCP 1.1 s, TBT 120 ms, CLS 0, 63 KiB transfer.
-- Live artifacts match available `main` byte for byte. Security headers, cache policy, routes, and designed HTTP 404 pass.
+## Verification
 
-## Defects
-
-| Severity | Finding |
-| --- | --- |
-| Critical / release-blocking | Requested candidate SHA does not exist in the supplied repository or remote. |
-| High / release-blocking | Privacy, Terms, and 404 skip links change the hash but leave focus on `<body>` instead of main content. |
-| Medium / release-blocking | The 404 recovery link is 20 px tall, below the required 44 px touch target. |
-| Low | Privacy says “Clear local audit summary”; the actual control says “Clear local report.” |
-
-## Reproduce
+Ran from a clean dependency install:
 
 ```sh
 npm ci
@@ -36,12 +29,26 @@ npm test
 npm run typecheck
 npm run lint
 npm run build
-npm run test:e2e
 node --check public/sw.js
+npm run test:e2e
 ```
 
-Claim outputs, screenshots, Lighthouse JSON, and factory URL verification are in `.factory/verification-evidence/`.
+- `npm ci`: PASS — 60 packages, 0 vulnerabilities.
+- `npm test`: PASS — 15 tests in 3 files, including static response-policy coverage.
+- Typecheck and lint: PASS.
+- Production build: PASS — `dist/` created; JavaScript 19.83 KB raw / 7.80 KB gzip and CSS 9.52 KB raw / 2.93 KB gzip.
+- Worker syntax: PASS.
+- `npm run test:e2e`: PASS — 14 Playwright tests.
+- Each exact command in `.factory/claims.json` was run separately: all 7 claims passed (`mime-audit`, `local-only`, `offline-reload`, `receipt-exports`, `report-persistence`, `free-use`, and `demo-no-setup`).
+- Desktop and 390px browser checks passed with no overflow or undersized visible controls. Keyboard checks include the repaired skip links. The Playwright Axe integration found zero serious or critical issues on demo, Privacy, Terms, and 404.
+- The factory URL check against the production build passed: HTTP 200 in 567 ms, no console/page errors, title/lang/h1/main/alt/button checks all passed.
+- The standalone `@axe-core/cli` was also attempted, but its Selenium runner could not start Chrome in this container (ChromeDriver/browser startup failure). The repository's Playwright Axe integration uses the installed Playwright browser and passed on the same four routes.
+- Offline/update, local-only network behavior, receipt downloads, report persistence, and response-policy configuration remain exercised by the passing browser/unit suites. This is a static PWA, so backend rate-limit, identity, API response-policy, and package-consumer checks do not apply.
 
-## Next step
+## Deployment
 
-Push the exact candidate (or issue a new work order with an available full SHA), repair the legal/404 keyboard and touch-target defects, align the Privacy control name, and rerun independent verification against the new commit and live URL.
+Push this repair to `main`; the static deployment is configured to publish `dist/` with `staticwebapp.config.json` at its root. After publish, verify the live app identity and repeat the keyboard, 390px, privacy, service-worker/offline, and route checks.
+
+## Known gaps
+
+None in product behavior. The only tooling limitation is the standalone Axe CLI's ChromeDriver startup in this disposable runner; equivalent Playwright Axe coverage passed.
