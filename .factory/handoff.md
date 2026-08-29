@@ -42,6 +42,7 @@ npm run test:e2e
 - Each exact command in `.factory/claims.json` was run separately: all 7 claims passed (`mime-audit`, `local-only`, `offline-reload`, `receipt-exports`, `report-persistence`, `free-use`, and `demo-no-setup`).
 - Desktop and 390px browser checks passed with no overflow or undersized visible controls. Keyboard checks include the repaired skip links. The Playwright Axe integration found zero serious or critical issues on demo, Privacy, Terms, and 404.
 - The factory URL check against the production build passed: HTTP 200 in 567 ms, no console/page errors, title/lang/h1/main/alt/button checks all passed.
+- Live mobile Lighthouse 12.8.2: 99 performance, 100 accessibility, 100 best practices, and 100 SEO; LCP 1.112 s, TBT 123 ms, CLS 0.
 - The standalone `@axe-core/cli` was also attempted, but its Selenium runner could not start Chrome in this container (ChromeDriver/browser startup failure). The repository's Playwright Axe integration uses the installed Playwright browser and passed on the same four routes.
 - Offline/update, local-only network behavior, receipt downloads, report persistence, and response-policy configuration remain exercised by the passing browser/unit suites. This is a static PWA, so backend rate-limit, identity, API response-policy, and package-consumer checks do not apply.
 
